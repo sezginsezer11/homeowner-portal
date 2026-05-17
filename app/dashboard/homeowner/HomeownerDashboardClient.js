@@ -1,7 +1,8 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Home, TrendingUp, DollarSign, MessageSquare, Plus, RefreshCw, ChevronRight, User, AlertCircle, Building2, Percent, ArrowUpRight, ArrowDownRight, Clock, ShoppingCart, Edit2, Search, BarChart2, Calendar } from 'lucide-react'
+import { Home, TrendingUp, DollarSign, MessageSquare, Plus, RefreshCw, ChevronRight, User, AlertCircle, Building2, Percent, ArrowUpRight, ArrowDownRight, Clock, ShoppingCart, Edit2, Search, BarChart2, Calendar, Zap } from 'lucide-react'
 import AddPropertyModal from './AddPropertyModal'
+import GetOfferModal from './GetOfferModal'
 import EditPropertyModal from './EditPropertyModal'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import Link from 'next/link'
@@ -34,7 +35,7 @@ function EquityMeter({equity, value}) {
   return <svg viewBox="0 0 150 85" className="w-full max-w-[160px] mx-auto"><path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${cx+r} ${cy}`} fill="none" stroke="#f0f2f5" strokeWidth="12" strokeLinecap="round"/><path d={`M ${cx-r} ${cy} A ${r} ${r} 0 0 1 ${x} ${y}`} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round"/><circle cx={x} cy={y} r="5" fill="white" stroke={color} strokeWidth="2"/><text x={cx} y={cy-6} textAnchor="middle" fill="#1a1a2e" fontSize="13" fontWeight="bold">{pct(ratio)}</text><text x={cx} y={cy+8} textAnchor="middle" fill="#65676b" fontSize="6">EQUITY</text></svg>
 }
 
-function PropertyCard({ prop, avm, avmLoading, onSelect, onEdit, selected, rate }) {
+function PropertyCard({ prop, avm, avmLoading, onSelect, onEdit, onGetOffer, selected, rate }) {
   const val    = avm?.estimatedValue || prop.avm_value || null
   const equity = val && prop.loan_balance ? val - prop.loan_balance : null
   const gain   = val && prop.purchase_price ? val - prop.purchase_price : null
@@ -240,7 +241,8 @@ export default function HomeownerDashboardClient({profile, properties, unreadMes
             <PropertyCard key={p.id} prop={p} avm={avmCache[p.id]} avmLoading={avmLoading[p.id]}
               selected={selectedProp?.id === p.id} rate={rate}
               onSelect={() => setSelectedProp(p)}
-              onEdit={() => openEdit(p)} />
+              onEdit={() => openEdit(p)}
+              onGetOffer={() => { setOfferProp({...p, avm_value: avmCache[p.id]?.estimatedValue || p.avm_value}); setShowOfferModal(true) }} />
           ))}
         </div>
       )}
@@ -258,6 +260,10 @@ export default function HomeownerDashboardClient({profile, properties, unreadMes
               {avm?.lastUpdated && <div className="hidden sm:flex items-center gap-1 text-[#9ca3af] text-[10px]"><Clock className="w-3 h-3" /><span>Next {daysUntil(avm.nextUpdate)}</span></div>}
               <button onClick={e => openEdit(selectedProp, e)} className="flex items-center gap-1 text-[#65676b] hover:text-[#1877F2] transition-colors text-xs font-semibold px-2 py-1 rounded-lg hover:bg-[#e7f0fd]">
                 <Edit2 className="w-3.5 h-3.5" /> Edit
+              </button>
+              <button onClick={() => { setOfferProp({...selectedProp, avm_value: avm?.estimatedValue || selectedProp.avm_value}); setShowOfferModal(true) }}
+                className="flex items-center gap-1.5 text-[#1877F2] font-bold text-xs px-2.5 py-1.5 bg-[#e7f0fd] hover:bg-[#1877F2] hover:text-white rounded-lg transition-all">
+                <Zap className="w-3 h-3" /> Get Offer
               </button>
               <button onClick={() => fetchAVM(selectedProp, true)} disabled={loading}
                 className="flex items-center gap-1 text-[#1877F2] hover:text-[#1665d8] transition-colors text-xs font-semibold px-2 py-1 rounded-lg hover:bg-[#e7f0fd]">
@@ -379,6 +385,7 @@ export default function HomeownerDashboardClient({profile, properties, unreadMes
       )}
 
       {showAddModal && <AddPropertyModal onClose={() => setShowAddModal(false)} onAdded={() => { setShowAddModal(false); window.location.reload() }} />}
+      {showOfferModal && <GetOfferModal property={offerProp} onClose={() => setShowOfferModal(false)} onSubmitted={() => setShowOfferModal(false)} />}
       {showEditModal && editingProp && <EditPropertyModal property={{...editingProp, avm_value: avmCache[editingProp.id]?.estimatedValue || editingProp.avm_value}} onClose={() => setShowEditModal(false)} onSaved={() => { setShowEditModal(false); window.location.reload() }} onDeleted={() => { setShowEditModal(false); window.location.reload() }} />}
     </div>
   )

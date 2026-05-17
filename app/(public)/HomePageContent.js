@@ -241,6 +241,67 @@ export default function HomePageContent() {
         </div>
       </section>
 
+
+      {/* GET AN OFFER */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-gradient-to-br from-[#1a1a2e] via-[#243b55] to-[#344a57] rounded-3xl overflow-hidden">
+            <div className="grid md:grid-cols-2 gap-0 items-center">
+              <div className="p-10 md:p-14">
+                <div className="inline-flex items-center gap-2 bg-[#1877F2]/20 text-[#60a5fa] text-xs font-bold px-3 py-1.5 rounded-full mb-6 w-fit">
+                  ⚡ NEW FEATURE
+                </div>
+                <h2 className="text-4xl font-black text-white leading-tight mb-4">
+                  Get an offer on your home today
+                </h2>
+                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                  Connect with qualified buyers and cash investors on the 360Everywhere platform. No open houses, no hassle — get real offers in 24 hours.
+                </p>
+                <div className="space-y-3 mb-8">
+                  {[
+                    'Cash buyers close in as little as 7 days',
+                    'No obligation — compare multiple offers',
+                    'You control the timeline and terms',
+                    'Connect with investors & traditional buyers',
+                  ].map(f => (
+                    <div key={f} className="flex items-center gap-3">
+                      <div className="w-5 h-5 rounded-full bg-[#1877F2] flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-black">✓</span>
+                      </div>
+                      <span className="text-gray-200 text-sm">{f}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/auth/signup?intent=offer"
+                  className="inline-flex items-center gap-2 bg-[#1877F2] hover:bg-[#1665d8] text-white font-bold px-8 py-4 rounded-xl transition-colors text-sm shadow-lg">
+                  ⚡ Get My Offers Now
+                </Link>
+                <p className="text-gray-400 text-xs mt-3">Free · No obligation · Takes 2 minutes</p>
+              </div>
+              <div className="hidden md:block p-10">
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 space-y-4">
+                  <div className="text-white/60 text-xs uppercase tracking-wider font-bold">Sample Offers Received</div>
+                  {[
+                    { buyer:'Cash Buyer', amount:'$1,180,000', type:'All Cash', days:'7 day close', color:'text-green-400' },
+                    { buyer:'Traditional Buyer', amount:'$1,225,000', type:'Pre-Approved', days:'30 day close', color:'text-[#60a5fa]' },
+                    { buyer:'Investor Group', amount:'$1,150,000', type:'All Cash', days:'14 day close', color:'text-yellow-400' },
+                  ].map(offer => (
+                    <div key={offer.buyer} className="bg-white/10 rounded-xl p-4 flex items-center justify-between">
+                      <div>
+                        <div className="text-white font-bold text-sm">{offer.buyer}</div>
+                        <div className="text-white/50 text-xs">{offer.type} · {offer.days}</div>
+                      </div>
+                      <div className={`font-black text-lg ${offer.color}`}>{offer.amount}</div>
+                    </div>
+                  ))}
+                  <p className="text-white/30 text-[10px] text-center italic">Sample data — not real offers</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* AGENT CONNECT FORM */}
       <section className="py-20 bg-white" id="agent">
         <div className="max-w-3xl mx-auto px-6">
