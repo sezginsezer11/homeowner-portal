@@ -18,7 +18,6 @@ export async function GET(request) {
   }
 
   try {
-    // Step 1: autocomplete to get URL
     const query = encodeURIComponent(`${address}, ${city}, ${state} ${zip}`)
     const searchRes = await fetch(
       `https://redfin-com-data.p.rapidapi.com/properties/auto-complete?query=${query}`,
@@ -28,58 +27,65 @@ export async function GET(request) {
     const firstResult = searchData?.data?.[0]?.rows?.[0]
     if (!firstResult?.url) return NextResponse.json({ found: false })
 
-    // Step 2: get property details
     const detailRes = await fetch(
       `https://redfin-com-data.p.rapidapi.com/properties/details?url=${encodeURIComponent(firstResult.url)}`,
       { headers: HEADERS }
     )
     const detail = await detailRes.json()
     const d = detail?.data
+    const aboveTheFold = d?.aboveTheFold?.addressSectionInfo
 
-    // Extract amenities
-    const amenities = d?.belowTheFold?.amenitiesInfo?.amenitiesDisplayLevel
-    const amenityGroups = d?.belowTheFold?.amenitiesInfo?.superGroups?.[0]?.amenityGroups?.[0]?.amenityEntries || []
+    // Try all possible amenity group structures
+    const allGroups = d?.belowTheFold?.amenitiesInfo?.superGroups?.flatMap(sg =>
+      sg?.amenityGroups?.flatMap(ag => ag?.amenityEntries || []) || []
+    ) || []
 
-    const getAmenity = (name) => amenityGroups.find(a => a.amenityName === name)?.amenityValues?.[0]
-
-    // Property type mapping
-    const propTypeMap = {
-      3: 'Condo/Townhome', 6: 'Single Family', 13: 'Townhome',
-      4: 'Multi-Family', 5: 'Multi-Family', 1: 'Land',
+    // Helper to find amenity value by multiple possible names
+    const getA = (...names) => {
+      for (const name of names) {
+        const found = allGroups.find(a =>
+          a.amenityName?.toLowerCase().includes(name.toLowerCase())
+        )
+        if (found?.amenityValues?.[0]) return found.amenityValues[0]
+      }
+      return null
     }
-    const propertyType = propTypeMap[d?.aboveTheFold?.addressSectionInfo?.propertyType] || 'Residential'
 
-    // Last sale info from property history
+    const propTypeMap = { 3:'Condo/Townhome', 6:'Single Family', 13:'Townhome', 4:'Multi-Family' }
     const history = d?.belowTheFold?.propertyHistoryInfo?.events || []
-    const lastSale = history.find(e => e.historyEventType === 1 || e.eventDescription?.toLowerCase().includes('sold'))
-
-    // AVM value
+    const lastSale = history.find(e => e.historyEventType === 1)
     const estimatedValue = d?.avm?.predictedValue
-      || d?.aboveTheFold?.addressSectionInfo?.avmInfo?.predictedValue
+      || aboveTheFold?.avmInfo?.predictedValue
+      || aboveTheFold?.priceInfo?.amount
       || null
 
-    // Beds/baths from listings nearby or amenities
-    const beds  = getAmenity('Beds')  || d?.aboveTheFold?.addressSectionInfo?.beds  || null
-    const baths = getAmenity('Baths') || d?.aboveTheFold?.addressSectionInfo?.baths || null
-    const sqft  = getAmenity('Sq. Ft.') || null
-    const yearBuilt = getAmenity('Year Built') || null
+    // Sq ft — try multiple field paths
+    const sqftRaw = getA('Sq. Ft.', 'Square Feet', 'sqft', 'sq ft', 'Total Sq')
+    const sqft = sqftRaw ? parseInt(sqftRaw.toString().replace(/,/g,'')) : null
+
+    // Year built — try multiple field paths
+    const yearRaw = getA('Year Built', 'Built', 'Year')
+    const yearBuilt = yearRaw ? parseInt(yearRaw) : null
+
+    // Beds/baths
+    const bedsRaw  = getA('Beds', 'Bedrooms', 'Bed')
+    const bathsRaw = getA('Baths', 'Bathrooms', 'Bath')
+    const beds  = bedsRaw  ? parseInt(bedsRaw)   : aboveTheFold?.beds  || null
+    const baths = bathsRaw ? parseFloat(bathsRaw) : aboveTheFold?.baths || null
+
+    // Log what we found to help debug
+    console.log('Amenity keys found:', allGroups.map(g => g.amenityName).filter(Boolean))
 
     return NextResponse.json({
-      found:          true,
-      address:        d?.aboveTheFold?.addressSectionInfo?.streetAddress?.assembledAddress || address,
-      city:           d?.aboveTheFold?.addressSectionInfo?.city || city,
-      state:          d?.aboveTheFold?.addressSectionInfo?.state || state,
-      zip:            d?.aboveTheFold?.addressSectionInfo?.zip || zip,
-      propertyType,
-      beds:           beds ? parseInt(beds) : null,
-      baths:          baths ? parseFloat(baths) : null,
-      sqft:           sqft ? parseInt(sqft.replace(/,/g,'')) : null,
-      yearBuilt:      yearBuilt ? parseInt(yearBuilt) : null,
+      found:         true,
+      propertyType:  propTypeMap[aboveTheFold?.propertyType] || 'Residential',
+      beds,
+      baths,
+      sqft,
+      yearBuilt,
       estimatedValue,
-      lastSalePrice:  lastSale?.price || null,
-      lastSaleDate:   lastSale?.eventDateString || null,
-      latitude:       d?.aboveTheFold?.addressSectionInfo?.latLong?.latitude || null,
-      longitude:      d?.aboveTheFold?.addressSectionInfo?.latLong?.longitude || null,
+      lastSalePrice: lastSale?.price || null,
+      lastSaleDate:  lastSale?.eventDateString || null,
     })
   } catch (err) {
     return NextResponse.json({ found: false, error: err.message })
