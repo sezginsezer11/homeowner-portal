@@ -16,6 +16,9 @@ module.exports = {
         ink:      '#0f1623',
         gold:     '#c9a84c',
       },
+      screens: {
+        'xs': '375px',
+      },
     },
   },
   plugins: [],
