@@ -14,13 +14,14 @@ export default async function LenderDashboard() {
   const { data: relationships } = await supabase
     .from('relationships')
     .select(`
-      *,
+      id, status,
       homeowner:homeowner_id (
         id, full_name, email, phone,
-        properties (id, address, city, state, zip, purchase_price, loan_balance, loan_rate, loan_type, sqft, bedrooms)
+        properties (id, address, city, state, zip, purchase_price, loan_balance, loan_rate, loan_type, sqft, bedrooms, avm_value)
       )
     `)
     .eq('professional_id', user.id)
+    .eq('status', 'accepted')
     .order('created_at', { ascending: false })
 
   const { data: recentMessages } = await supabase
@@ -30,10 +31,9 @@ export default async function LenderDashboard() {
     .order('created_at', { ascending: false })
     .limit(5)
 
-  // Fetch current mortgage rate
   let currentRate = 6.87
   try {
-    const rateRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL ? 'https://api.stlouisfed.org' : 'https://api.stlouisfed.org'}/fred/series/observations?series_id=MORTGAGE30US&api_key=e7b2e6b3a2a24e2c9c4b84ff7b2b4b4b&sort_order=desc&limit=1&file_type=json`)
+    const rateRes = await fetch('https://api.stlouisfed.org/fred/series/observations?series_id=MORTGAGE30US&api_key=e7b2e6b3a2a24e2c9c4b84ff7b2b4b4b&sort_order=desc&limit=1&file_type=json')
     const rateData = await rateRes.json()
     currentRate = parseFloat(rateData.observations?.[0]?.value) || 6.87
   } catch {}

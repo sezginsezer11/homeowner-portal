@@ -11,20 +11,19 @@ export default async function AgentDashboard() {
     .from('profiles').select('*').eq('id', user.id).single()
   if (profile?.role !== 'agent') redirect('/dashboard')
 
-  // All connected homeowners with their properties
   const { data: relationships } = await supabase
     .from('relationships')
     .select(`
-      *,
+      id, status,
       homeowner:homeowner_id (
         id, full_name, email, phone,
-        properties (id, address, city, state, zip, purchase_price, loan_balance, loan_rate, bedrooms, sqft)
+        properties (id, address, city, state, zip, purchase_price, loan_balance, loan_rate, avm_value, bedrooms, sqft)
       )
     `)
     .eq('professional_id', user.id)
+    .eq('status', 'accepted')
     .order('created_at', { ascending: false })
 
-  // Recent sent messages
   const { data: recentMessages } = await supabase
     .from('messages')
     .select('*, to:to_id(full_name)')
@@ -32,11 +31,16 @@ export default async function AgentDashboard() {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  // Extract clients from accepted relationships
+  const clients = (relationships || [])
+    .map(r => r.homeowner)
+    .filter(Boolean)
+
   return (
     <AgentDashboardClient
       profile={profile}
-      relationships={relationships || []}
-      recentMessages={recentMessages || []}
+      clients={clients}
+      messages={recentMessages || []}
     />
   )
 }
