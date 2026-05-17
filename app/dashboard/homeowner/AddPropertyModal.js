@@ -48,7 +48,7 @@ export default function AddPropertyModal({ onClose, onAdded }) {
   const update = (f) => (e) => setForm(p => ({...p, [f]: e.target.value}))
   const updateNum = (f) => (e) => setForm(p => ({...p, [f]: e.target.value.replace(/,/g,'')}))
 
-  const homeValue = parseNum(form.estimated_value) || parseNum(form.purchase_price) || 0
+  const homeValue = parseNum(form.purchase_price) || parseNum(form.last_sale_price) || parseNum(form.estimated_value) || 0
   const LTV_OPTIONS = [70,75,80,85,90,95].map(pct => ({
     pct, amount: homeValue ? Math.round(homeValue * pct / 100) : null
   }))
@@ -316,7 +316,7 @@ export default function AddPropertyModal({ onClose, onAdded }) {
               <div>
                 <label className={lbl}>
                   Current Loan Balance
-                  {homeValue>0 && <span className="ml-1 text-[#9ca3af] normal-case font-normal">· Based on {fmtNum(homeValue)} value</span>}
+                  {homeValue>0 && <span className="ml-1 text-[#9ca3af] normal-case font-normal">· Based on {fmtNum(homeValue)} purchase price</span>}
                 </label>
                 {homeValue > 0 && (
                   <div className="flex gap-1.5 mb-2 flex-wrap">
