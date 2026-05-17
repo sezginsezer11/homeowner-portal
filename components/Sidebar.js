@@ -13,14 +13,14 @@ import {
 
 const NAV = {
   homeowner: [
-    { href: '/dashboard/homeowner',              label: 'Dashboard',   icon: Home },
-    { href: '/dashboard/homeowner/search',       label: 'Search',      icon: Search,        soon: true },
-    { href: '/dashboard/homeowner/matches',      label: 'My Matches',  icon: Heart,         soon: true },
-    { href: '/dashboard/homeowner/messages',     label: 'Messages',    icon: MessageSquare },
-    { href: '/dashboard/homeowner/connections',  label: 'Connections', icon: UserCheck },
-    { href: '/dashboard/homeowner/mortgage',     label: 'Mortgage',    icon: Calculator },
-    { href: '/dashboard/homeowner/market',       label: 'My Market',   icon: BarChart2,     soon: true },
-    { href: '/dashboard/profile',                label: 'Profile',     icon: UserCircle },
+    { href: '/dashboard/homeowner',             label: 'Dashboard',   icon: Home },
+    { href: '/dashboard/homeowner/search',      label: 'Search',      icon: Search,     soon: true },
+    { href: '/dashboard/homeowner/matches',     label: 'My Matches',  icon: Heart,      soon: true },
+    { href: '/dashboard/homeowner/messages',    label: 'Messages',    icon: MessageSquare },
+    { href: '/dashboard/homeowner/connections', label: 'Connections', icon: UserCheck },
+    { href: '/dashboard/homeowner/mortgage',    label: 'Mortgage',    icon: Calculator },
+    { href: '/dashboard/homeowner/market',      label: 'My Market',   icon: BarChart2,  soon: true },
+    { href: '/dashboard/profile',               label: 'Profile',     icon: UserCircle },
   ],
   agent: [
     { href: '/dashboard/agent',              label: 'Dashboard', icon: Home },
@@ -38,7 +38,7 @@ const NAV = {
 }
 
 const ROLE_LABEL = { homeowner: 'Homeowner', agent: 'Real Estate Agent', lender: 'Lender' }
-const ROLE_COLOR = { homeowner: 'text-[#c9a84c]', agent: 'text-green-400', lender: 'text-blue-400' }
+const ROLE_DOT   = { homeowner: 'bg-[#c9a84c]', agent: 'bg-green-500', lender: 'bg-blue-500' }
 
 export default function Sidebar({ profile }) {
   const router   = useRouter()
@@ -48,8 +48,7 @@ export default function Sidebar({ profile }) {
 
   useEffect(() => { setOpen(false) }, [pathname])
   useEffect(() => {
-    if (open) document.body.style.overflow = 'hidden'
-    else document.body.style.overflow = ''
+    document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
@@ -61,58 +60,63 @@ export default function Sidebar({ profile }) {
   }
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
-      <div className="p-5 border-b border-[#344a57]/20 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#344a57] flex items-center justify-center shadow-md flex-shrink-0">
-            <Building2 className="w-4 h-4 text-[#c9a84c]" />
+    <div className="flex flex-col h-full bg-white">
+      {/* Logo */}
+      <div className="px-5 py-4 border-b border-[#e4e6eb] flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#1877F2] flex items-center justify-center shadow-sm">
+            <Building2 className="w-4 h-4 text-white" />
           </div>
           <div>
-            <div className="font-bold text-white text-sm leading-tight">HomeOwner</div>
-            <div className="text-[#8fa1ad] text-xs">Portal</div>
+            <div className="font-bold text-[#1a1a2e] text-sm leading-tight">HomeOwner</div>
+            <div className="text-[#65676b] text-[10px]">Portal</div>
           </div>
         </div>
-        <button onClick={() => setOpen(false)} className="lg:hidden text-[#8fa1ad] hover:text-white p-1">
+        <button onClick={() => setOpen(false)} className="lg:hidden text-[#65676b] hover:text-[#1a1a2e] p-1">
           <X className="w-5 h-5" />
         </button>
       </div>
 
-      <Link href="/dashboard/profile" className="p-4 border-b border-[#344a57]/20 hover:bg-[#344a57]/10 transition-colors">
+      {/* User */}
+      <Link href="/dashboard/profile" className="px-4 py-3 border-b border-[#e4e6eb] hover:bg-[#f8f9fa] transition-colors">
         <div className="flex items-center gap-3">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover border border-[#344a57] flex-shrink-0" />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#344a57] to-[#1a2332] border border-[#344a57] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-          )}
+          <div className="relative flex-shrink-0">
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover border border-[#e4e6eb]" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-[#e7f0fd] flex items-center justify-center text-[#1877F2] font-bold text-sm border border-[#e4e6eb]">
+                {profile?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${ROLE_DOT[profile?.role] || 'bg-gray-400'}`} />
+          </div>
           <div className="min-w-0">
-            <div className="text-white text-sm font-semibold truncate">{profile?.full_name || 'User'}</div>
-            <div className={`text-xs ${ROLE_COLOR[profile?.role] || 'text-[#8fa1ad]'}`}>
-              {ROLE_LABEL[profile?.role] || 'User'}
-            </div>
-            {profile?.company && <div className="text-[#464d4f] text-[10px] truncate">{profile.company}</div>}
+            <div className="text-[#1a1a2e] text-sm font-semibold truncate">{profile?.full_name || 'User'}</div>
+            <div className="text-[#65676b] text-xs">{ROLE_LABEL[profile?.role] || 'User'}</div>
           </div>
         </div>
       </Link>
 
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+      {/* Nav */}
+      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon, soon }) => {
           const active = pathname === href || (href !== '/dashboard/homeowner' && pathname.startsWith(href))
           return (
             <div key={href}>
               {soon ? (
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#464d4f] cursor-not-allowed">
+                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#c8d0dc] cursor-not-allowed">
                   <Icon className="w-4 h-4 flex-shrink-0" />
                   <span className="text-sm flex-1">{label}</span>
-                  <span className="text-[9px] bg-[#344a57]/40 text-[#8fa1ad] px-1.5 py-0.5 rounded-full">Soon</span>
+                  <span className="text-[9px] bg-[#f0f2f5] text-[#9ca3af] px-1.5 py-0.5 rounded-full">Soon</span>
                 </div>
               ) : (
                 <Link href={href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm ${
-                    active ? 'bg-[#344a57] text-white font-medium' : 'text-[#8fa1ad] hover:bg-[#344a57]/30 hover:text-white'
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm ${
+                    active
+                      ? 'bg-[#e7f0fd] text-[#1877F2] font-semibold'
+                      : 'text-[#65676b] hover:bg-[#f0f2f5] hover:text-[#1a1a2e]'
                   }`}>
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-[#c9a84c]' : ''}`} />
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${active ? 'text-[#1877F2]' : ''}`} />
                   {label}
                 </Link>
               )}
@@ -121,22 +125,21 @@ export default function Sidebar({ profile }) {
         })}
       </nav>
 
-      <div className="border-t border-[#344a57]/20">
-        {profile?.email && (
+      {/* Footer */}
+      <div className="border-t border-[#e4e6eb]">
+        {(profile?.email || profile?.license_number) && (
           <div className="px-4 pt-3 pb-1">
-            <p className="text-[#464d4f] text-xs truncate">{profile.email}</p>
-            {profile?.license_number && (
-              <p className="text-[#464d4f] text-xs">License # {profile.license_number}</p>
-            )}
+            {profile?.email && <p className="text-[#9ca3af] text-xs truncate">{profile.email}</p>}
+            {profile?.license_number && <p className="text-[#9ca3af] text-xs">DRE # {profile.license_number}</p>}
           </div>
         )}
-        <div className="p-3 space-y-0.5">
+        <div className="p-2 space-y-0.5">
           <Link href="/dashboard/profile"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#8fa1ad] hover:text-white hover:bg-[#344a57]/30 transition-all text-sm w-full">
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#65676b] hover:bg-[#f0f2f5] hover:text-[#1a1a2e] transition-all text-sm w-full">
             <Settings className="w-4 h-4 flex-shrink-0" /> Settings
           </Link>
           <button onClick={handleLogout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#8fa1ad] hover:text-red-400 hover:bg-red-900/20 transition-all text-sm w-full">
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#65676b] hover:text-red-500 hover:bg-red-50 transition-all text-sm w-full">
             <LogOut className="w-4 h-4 flex-shrink-0" /> Sign Out
           </button>
         </div>
@@ -147,19 +150,19 @@ export default function Sidebar({ profile }) {
   return (
     <>
       <button onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-[#1a2332] border border-[#344a57]/30 rounded-xl flex items-center justify-center text-white shadow-lg">
+        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-white border border-[#e4e6eb] rounded-xl flex items-center justify-center text-[#1a1a2e] shadow-card">
         <Menu className="w-5 h-5" />
       </button>
 
       {open && (
-        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setOpen(false)} />
+        <div className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={() => setOpen(false)} />
       )}
 
-      <aside className={`lg:hidden fixed left-0 top-0 h-full w-72 bg-[#1a2332] border-r border-[#344a57]/20 z-50 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`lg:hidden fixed left-0 top-0 h-full w-72 bg-white border-r border-[#e4e6eb] z-50 transform transition-transform duration-300 shadow-nav ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         <SidebarContent />
       </aside>
 
-      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-[#1a2332] border-r border-[#344a57]/20 flex-col z-40">
+      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-[#e4e6eb] flex-col z-40 shadow-nav">
         <SidebarContent />
       </aside>
     </>

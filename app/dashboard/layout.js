@@ -11,11 +11,10 @@ export default async function DashboardLayout({ children }) {
     .from('profiles').select('*').eq('id', user.id).single()
 
   return (
-    <div className="flex min-h-screen bg-[#0f1623]">
+    <div className="flex min-h-screen bg-[#f8f9fa]">
       <Sidebar profile={profile} />
-      {/* Desktop: offset for fixed sidebar. Mobile: full width with top padding for hamburger */}
       <main className="flex-1 lg:ml-64 min-h-screen">
-        <div className="p-4 pt-16 lg:pt-0 lg:p-8">
+        <div className="p-4 pt-16 lg:pt-6 lg:p-8 max-w-7xl">
           {children}
         </div>
       </main>
