@@ -5,28 +5,28 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import {
-  Home, MessageSquare, Users, TrendingUp, LogOut,
-  Building2, Percent, Search, Heart, Star,
-  BarChart2, Settings, Menu, X, ChevronDown, ChevronUp,
-  Calculator, UserCircle
+  Home, MessageSquare, Users, LogOut,
+  Building2, Percent, Search, Heart,
+  BarChart2, Settings, Menu, X,
+  Calculator, UserCircle, UserCheck
 } from 'lucide-react'
 
 const NAV = {
   homeowner: [
-    { href: '/dashboard/homeowner',          label: 'Dashboard',   icon: Home },
-    { href: '/dashboard/homeowner/search',   label: 'Search',      icon: Search,    soon: true },
-    { href: '/dashboard/homeowner/matches',  label: 'My Matches',  icon: Heart,     soon: true },
-    { href: '/dashboard/homeowner/messages', label: 'Messages',    icon: MessageSquare },
-    { href: '/dashboard/homeowner/team',     label: 'My Team',     icon: Users },
-    { href: '/dashboard/homeowner/mortgage', label: 'Mortgage',    icon: Calculator, soon: true },
-    { href: '/dashboard/homeowner/market',   label: 'My Market',   icon: BarChart2,  soon: true },
-    { href: '/dashboard/profile',            label: 'Profile',     icon: UserCircle },
+    { href: '/dashboard/homeowner',              label: 'Dashboard',   icon: Home },
+    { href: '/dashboard/homeowner/search',       label: 'Search',      icon: Search,        soon: true },
+    { href: '/dashboard/homeowner/matches',      label: 'My Matches',  icon: Heart,         soon: true },
+    { href: '/dashboard/homeowner/messages',     label: 'Messages',    icon: MessageSquare },
+    { href: '/dashboard/homeowner/connections',  label: 'Connections', icon: UserCheck },
+    { href: '/dashboard/homeowner/mortgage',     label: 'Mortgage',    icon: Calculator },
+    { href: '/dashboard/homeowner/market',       label: 'My Market',   icon: BarChart2,     soon: true },
+    { href: '/dashboard/profile',                label: 'Profile',     icon: UserCircle },
   ],
   agent: [
-    { href: '/dashboard/agent',              label: 'Dashboard',   icon: Home },
-    { href: '/dashboard/agent/clients',      label: 'Clients',     icon: Users },
-    { href: '/dashboard/agent/messages',     label: 'Messages',    icon: MessageSquare },
-    { href: '/dashboard/profile',            label: 'Profile',     icon: UserCircle },
+    { href: '/dashboard/agent',              label: 'Dashboard', icon: Home },
+    { href: '/dashboard/agent/clients',      label: 'Clients',   icon: Users },
+    { href: '/dashboard/agent/messages',     label: 'Messages',  icon: MessageSquare },
+    { href: '/dashboard/profile',            label: 'Profile',   icon: UserCircle },
   ],
   lender: [
     { href: '/dashboard/lender',             label: 'Dashboard',   icon: Home },
@@ -46,10 +46,7 @@ export default function Sidebar({ profile }) {
   const [open, setOpen] = useState(false)
   const navItems = NAV[profile?.role] || NAV.homeowner
 
-  // Close sidebar on route change (mobile)
   useEffect(() => { setOpen(false) }, [pathname])
-
-  // Prevent body scroll when sidebar open on mobile
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden'
     else document.body.style.overflow = ''
@@ -65,7 +62,6 @@ export default function Sidebar({ profile }) {
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      {/* Logo */}
       <div className="p-5 border-b border-[#344a57]/20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#344a57] flex items-center justify-center shadow-md flex-shrink-0">
@@ -81,7 +77,6 @@ export default function Sidebar({ profile }) {
         </button>
       </div>
 
-      {/* User info */}
       <Link href="/dashboard/profile" className="p-4 border-b border-[#344a57]/20 hover:bg-[#344a57]/10 transition-colors">
         <div className="flex items-center gap-3">
           {profile?.avatar_url ? (
@@ -101,17 +96,16 @@ export default function Sidebar({ profile }) {
         </div>
       </Link>
 
-      {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map(({ href, label, icon: Icon, soon }) => {
-          const active = pathname === href || pathname.startsWith(href + '/')
+          const active = pathname === href || (href !== '/dashboard/homeowner' && pathname.startsWith(href))
           return (
             <div key={href}>
               {soon ? (
                 <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#464d4f] cursor-not-allowed">
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-sm">{label}</span>
-                  <span className="ml-auto text-[9px] bg-[#344a57]/40 text-[#8fa1ad] px-1.5 py-0.5 rounded-full">Soon</span>
+                  <span className="text-sm flex-1">{label}</span>
+                  <span className="text-[9px] bg-[#344a57]/40 text-[#8fa1ad] px-1.5 py-0.5 rounded-full">Soon</span>
                 </div>
               ) : (
                 <Link href={href}
@@ -127,7 +121,6 @@ export default function Sidebar({ profile }) {
         })}
       </nav>
 
-      {/* Bottom info + logout */}
       <div className="border-t border-[#344a57]/20">
         {profile?.email && (
           <div className="px-4 pt-3 pb-1">
@@ -140,13 +133,11 @@ export default function Sidebar({ profile }) {
         <div className="p-3 space-y-0.5">
           <Link href="/dashboard/profile"
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#8fa1ad] hover:text-white hover:bg-[#344a57]/30 transition-all text-sm w-full">
-            <Settings className="w-4 h-4 flex-shrink-0" />
-            Settings
+            <Settings className="w-4 h-4 flex-shrink-0" /> Settings
           </Link>
           <button onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#8fa1ad] hover:text-red-400 hover:bg-red-900/20 transition-all text-sm w-full">
-            <LogOut className="w-4 h-4 flex-shrink-0" />
-            Sign Out
+            <LogOut className="w-4 h-4 flex-shrink-0" /> Sign Out
           </button>
         </div>
       </div>
@@ -155,27 +146,19 @@ export default function Sidebar({ profile }) {
 
   return (
     <>
-      {/* Mobile hamburger button */}
-      <button
-        onClick={() => setOpen(true)}
+      <button onClick={() => setOpen(true)}
         className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 bg-[#1a2332] border border-[#344a57]/30 rounded-xl flex items-center justify-center text-white shadow-lg">
         <Menu className="w-5 h-5" />
       </button>
 
-      {/* Mobile overlay */}
       {open && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
-          onClick={() => setOpen(false)}
-        />
+        <div className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={() => setOpen(false)} />
       )}
 
-      {/* Mobile sidebar (slide in) */}
       <aside className={`lg:hidden fixed left-0 top-0 h-full w-72 bg-[#1a2332] border-r border-[#344a57]/20 z-50 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         <SidebarContent />
       </aside>
 
-      {/* Desktop sidebar (always visible) */}
       <aside className="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-[#1a2332] border-r border-[#344a57]/20 flex-col z-40">
         <SidebarContent />
       </aside>
