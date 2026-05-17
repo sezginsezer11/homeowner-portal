@@ -2,10 +2,11 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import PublicNav from '@/components/public/PublicNav'
 import PublicFooter from '@/components/public/PublicFooter'
-import HomePageContent from './(public)/HomePageContent'
+import dynamic from 'next/dynamic'
+
+const HomePageContent = dynamic(() => import('./(public)/HomePageContent'), { ssr: false })
 
 export default async function RootPage() {
-  // Redirect logged-in users to their dashboard
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
