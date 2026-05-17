@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react'
 import {
   Home, TrendingUp, DollarSign, MessageSquare,
   Plus, RefreshCw, ChevronRight, User, AlertCircle,
-  Building2, Percent, ArrowUpRight, ArrowDownRight, Clock
+  Building2, Percent, ArrowUpRight, ArrowDownRight,
+  Clock, Trash2, ShoppingCart, BarChart2, X
 } from 'lucide-react'
 import AddPropertyModal from './AddPropertyModal'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import Link from 'next/link'
 
 function fmt(n) {
   if (!n && n !== 0) return '—'
@@ -53,31 +55,103 @@ function EquityMeter({ equity, value }) {
   )
 }
 
-function StatCard({ label, value, sub, sub2, icon: Icon, iconColor, accent, children }) {
+// Multi-property comparison modal
+function MultiPropertyModal({ properties, avmCache, onClose }) {
+  const totalEquity = properties.reduce((sum, p) => {
+    const val = avmCache[p.id]?.estimatedValue || p.avm_value || 0
+    const eq = val && p.loan_balance ? val - p.loan_balance : 0
+    return sum + eq
+  }, 0)
+  const totalValue = properties.reduce((sum, p) => {
+    return sum + (avmCache[p.id]?.estimatedValue || p.avm_value || 0)
+  }, 0)
+
   return (
-    <div className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card p-5">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-[#65676b] uppercase tracking-wider">{label}</span>
-        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${accent || 'bg-[#e7f0fd]'}`}>
-          <Icon className={`w-4 h-4 ${iconColor || 'text-[#1877F2]'}`} />
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl w-full max-w-4xl shadow-cardHv border border-[#e4e6eb] max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-[#e4e6eb] sticky top-0 bg-white z-10">
+          <div>
+            <h2 className="text-[#1a1a2e] font-bold text-lg">Portfolio Overview</h2>
+            <p className="text-[#65676b] text-xs mt-0.5">All your properties side by side</p>
+          </div>
+          <button onClick={onClose} className="text-[#65676b] hover:text-[#1a1a2e] p-1"><X className="w-5 h-5" /></button>
+        </div>
+
+        {/* Portfolio totals */}
+        <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-3 border-b border-[#e4e6eb] bg-[#f8f9fa]">
+          {[
+            { label: 'Total Portfolio Value', value: fmt(totalValue), color: 'text-[#1877F2]' },
+            { label: 'Total Equity',          value: fmt(totalEquity), color: 'text-green-600' },
+            { label: 'Properties',            value: properties.length, color: 'text-[#1a1a2e]' },
+            { label: 'Avg Equity %',          value: totalValue ? `${((totalEquity/totalValue)*100).toFixed(0)}%` : '—', color: 'text-purple-600' },
+          ].map(item => (
+            <div key={item.label} className="bg-white rounded-xl border border-[#e4e6eb] p-3 text-center shadow-card">
+              <div className="text-[10px] text-[#65676b] uppercase tracking-wider mb-1">{item.label}</div>
+              <div className={`text-lg font-bold ${item.color}`}>{item.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Property cards */}
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {properties.map(p => {
+            const val    = avmCache[p.id]?.estimatedValue || p.avm_value || null
+            const equity = val && p.loan_balance ? val - p.loan_balance : null
+            const gain   = val && p.purchase_price ? val - p.purchase_price : null
+            const equityPct = equity && val ? (equity / val) * 100 : null
+            const monthlyPI = p.loan_balance && p.loan_rate
+              ? (() => {
+                  const r = p.loan_rate / 100 / 12
+                  const n = 360
+                  return p.loan_balance * r * Math.pow(1+r,n) / (Math.pow(1+r,n)-1)
+                })()
+              : null
+
+            return (
+              <div key={p.id} className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card overflow-hidden">
+                <div className="bg-[#1877F2] px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Home className="w-4 h-4 text-white/70 flex-shrink-0" />
+                    <div className="text-white font-semibold text-sm truncate">{p.address}</div>
+                  </div>
+                  <div className="text-white/60 text-xs mt-0.5">{p.city}, {p.state} {p.zip}</div>
+                </div>
+                <div className="p-4 space-y-2">
+                  {[
+                    { label: 'Est. Home Value',     value: fmt(val),        color: 'text-[#1877F2]' },
+                    { label: 'Home Equity',          value: fmt(equity),     color: 'text-green-600' },
+                    { label: 'Equity %',             value: equityPct ? `${equityPct.toFixed(0)}%` : '—', color: 'text-green-600' },
+                    { label: 'Loan Balance',         value: fmt(p.loan_balance), color: 'text-[#1a1a2e]' },
+                    { label: 'Interest Rate',        value: p.loan_rate ? `${p.loan_rate}%` : '—', color: 'text-[#1a1a2e]' },
+                    { label: 'Est. Mo. Payment',     value: monthlyPI ? fmt(monthlyPI) : '—', color: 'text-[#1a1a2e]' },
+                    { label: 'Purchase Price',       value: fmt(p.purchase_price), color: 'text-[#65676b]' },
+                    { label: 'Total Gain',           value: gain ? fmt(Math.abs(gain)) : '—', color: gain >= 0 ? 'text-green-600' : 'text-red-500' },
+                  ].map(({ label, value, color }) => (
+                    <div key={label} className="flex items-center justify-between py-1.5 border-b border-[#f0f2f5] last:border-0">
+                      <span className="text-[#65676b] text-xs">{label}</span>
+                      <span className={`text-xs font-bold ${color}`}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
-      <div className="text-2xl lg:text-3xl font-bold text-[#1a1a2e] mt-1">{value}</div>
-      {sub  && <div className="text-xs text-[#65676b] mt-1">{sub}</div>}
-      {sub2 && <div className="text-xs text-[#9ca3af] mt-0.5">{sub2}</div>}
-      {children}
     </div>
   )
 }
 
 export default function HomeownerDashboardClient({ profile, properties, unreadMessages, relationships }) {
-  const [selectedProp, setSelectedProp] = useState(properties[0] || null)
-  const [avm, setAvm]                   = useState(null)
-  const [avmLoading, setAvmLoading]     = useState(false)
-  const [avmError, setAvmError]         = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [rate, setRate]                 = useState(null)
-  const [valueHistory, setValueHistory] = useState([])
+  const [selectedProp, setSelectedProp]   = useState(properties[0] || null)
+  const [avmCache, setAvmCache]           = useState({}) // { property_id: avmData }
+  const [avmLoading, setAvmLoading]       = useState({})
+  const [avmError, setAvmError]           = useState(null)
+  const [showAddModal, setShowAddModal]   = useState(false)
+  const [showPortfolio, setShowPortfolio] = useState(false)
+  const [deletingId, setDeletingId]       = useState(null)
+  const [rate, setRate]                   = useState(null)
+  const [valueHistory, setValueHistory]   = useState([])
 
   const agent  = relationships.find(r => r.professional?.role === 'agent')?.professional
   const lender = relationships.find(r => r.professional?.role === 'lender')?.professional
@@ -86,31 +160,76 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
     fetch('/api/rates').then(r => r.json()).then(d => setRate(d.rate)).catch(() => {})
   }, [])
 
+  // Auto-fetch AVM for ALL properties (with caching)
+  useEffect(() => {
+    properties.forEach(p => {
+      fetchAVM(p, false)
+    })
+  }, [properties.length])
+
   useEffect(() => {
     if (!selectedProp) return
-    fetchAVM(selectedProp, false)
-  }, [selectedProp?.id])
+    const avm = avmCache[selectedProp.id]
+    if (avm && selectedProp.purchase_price) {
+      const purchase = selectedProp.purchase_price || avm.estimatedValue * 0.85
+      setValueHistory(Array.from({ length: 6 }, (_, i) => ({
+        month: ['Jan','Feb','Mar','Apr','May','Jun'][i],
+        value: Math.round(purchase + ((avm.estimatedValue - purchase) * (i / 5))),
+      })))
+    }
+  }, [selectedProp?.id, avmCache])
 
   const fetchAVM = async (prop, force = false) => {
-    setAvmLoading(true); setAvmError(null)
+    if (avmLoading[prop.id]) return
+    setAvmLoading(prev => ({ ...prev, [prop.id]: true }))
+    setAvmError(null)
     try {
-      const q = new URLSearchParams({ address: prop.address, city: prop.city, state: prop.state, zip: prop.zip, property_id: prop.id, force: force ? 'true' : 'false' })
+      const q = new URLSearchParams({
+        address:     prop.address,
+        city:        prop.city,
+        state:       prop.state,
+        zip:         prop.zip,
+        property_id: prop.id,
+        force:       force ? 'true' : 'false',
+      })
       const res  = await fetch(`/api/avm?${q}`)
       const data = await res.json()
       if (data.error) throw new Error(data.error)
-      setAvm(data)
-      const purchase = prop.purchase_price || data.estimatedValue * 0.85
-      setValueHistory(Array.from({ length: 6 }, (_, i) => ({
-        month: ['Jan','Feb','Mar','Apr','May','Jun'][i],
-        value: Math.round(purchase + ((data.estimatedValue - purchase) * (i / 5))),
-      })))
-    } catch (err) { setAvmError(err.message) }
-    finally { setAvmLoading(false) }
+      setAvmCache(prev => ({ ...prev, [prop.id]: data }))
+    } catch (err) {
+      if (prop.id === selectedProp?.id) setAvmError(err.message)
+    } finally {
+      setAvmLoading(prev => ({ ...prev, [prop.id]: false }))
+    }
   }
 
+  const handleDelete = async (propId) => {
+    if (!confirm('Delete this property? This cannot be undone.')) return
+    setDeletingId(propId)
+    try {
+      await fetch('/api/property', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ property_id: propId }),
+      })
+      window.location.reload()
+    } catch {
+      setDeletingId(null)
+    }
+  }
+
+  const avm      = selectedProp ? avmCache[selectedProp.id] : null
+  const loading  = selectedProp ? avmLoading[selectedProp.id] : false
   const equity   = avm?.estimatedValue && selectedProp?.loan_balance ? avm.estimatedValue - selectedProp.loan_balance : null
   const gainLoss = avm?.estimatedValue && selectedProp?.purchase_price ? avm.estimatedValue - selectedProp.purchase_price : null
   const gainPct  = gainLoss && selectedProp?.purchase_price ? (gainLoss / selectedProp.purchase_price) * 100 : null
+
+  // Total portfolio equity across all properties
+  const totalPortfolioEquity = properties.reduce((sum, p) => {
+    const val = avmCache[p.id]?.estimatedValue || p.avm_value || 0
+    const eq  = val && p.loan_balance ? val - p.loan_balance : 0
+    return sum + eq
+  }, 0)
 
   return (
     <div className="space-y-5 pb-10">
@@ -131,6 +250,24 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
         </button>
       </div>
 
+      {/* Total Portfolio Equity Banner (if multiple properties) */}
+      {properties.length > 1 && totalPortfolioEquity > 0 && (
+        <button onClick={() => setShowPortfolio(true)}
+          className="w-full bg-gradient-to-r from-[#1877F2] to-[#1665d8] rounded-2xl p-4 text-left hover:shadow-cardHv transition-all">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-white/70 text-xs uppercase tracking-wider mb-1">Total Portfolio Equity</div>
+              <div className="text-white text-3xl font-bold">{fmt(totalPortfolioEquity)}</div>
+              <div className="text-white/60 text-xs mt-1">Across {properties.length} properties · Click to compare</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <BarChart2 className="w-8 h-8 text-white/40" />
+              <ChevronRight className="w-5 h-5 text-white/60" />
+            </div>
+          </div>
+        </button>
+      )}
+
       {/* No properties */}
       {properties.length === 0 && (
         <div className="bg-white rounded-2xl border-2 border-dashed border-[#e4e6eb] p-12 text-center shadow-card">
@@ -146,18 +283,25 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
         </div>
       )}
 
-      {/* Property selector */}
-      {properties.length > 1 && (
+      {/* Property selector tabs */}
+      {properties.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4 lg:mx-0 lg:px-0">
           {properties.map(p => (
-            <button key={p.id} onClick={() => setSelectedProp(p)}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
-                selectedProp?.id === p.id
-                  ? 'bg-[#1877F2] border-[#1877F2] text-white'
-                  : 'bg-white border-[#e4e6eb] text-[#65676b] hover:border-[#1877F2] hover:text-[#1877F2]'
-              }`}>
-              {p.address}
-            </button>
+            <div key={p.id} className="flex items-center gap-1 flex-shrink-0">
+              <button onClick={() => setSelectedProp(p)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
+                  selectedProp?.id === p.id
+                    ? 'bg-[#1877F2] border-[#1877F2] text-white'
+                    : 'bg-white border-[#e4e6eb] text-[#65676b] hover:border-[#1877F2] hover:text-[#1877F2]'
+                }`}>
+                {p.address}
+              </button>
+              <button onClick={() => handleDelete(p.id)} disabled={deletingId === p.id}
+                className="w-6 h-6 rounded-lg flex items-center justify-center text-[#9ca3af] hover:text-red-500 hover:bg-red-50 transition-all flex-shrink-0"
+                title="Delete property">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           ))}
         </div>
       )}
@@ -168,7 +312,9 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
           <div className="bg-white rounded-xl border border-[#e4e6eb] shadow-card px-4 py-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <Home className="w-3.5 h-3.5 text-[#1877F2] flex-shrink-0" />
-              <span className="text-[#1a1a2e] font-medium text-xs truncate">{selectedProp.address}, {selectedProp.city}, {selectedProp.state} {selectedProp.zip}</span>
+              <span className="text-[#1a1a2e] font-medium text-xs truncate">
+                {selectedProp.address}, {selectedProp.city}, {selectedProp.state} {selectedProp.zip}
+              </span>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
               {avm?.lastUpdated && (
@@ -177,10 +323,10 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
                   <span>Updated {daysAgo(avm.lastUpdated)} · Next {daysUntil(avm.nextUpdate)}</span>
                 </div>
               )}
-              <button onClick={() => fetchAVM(selectedProp, true)} disabled={avmLoading}
+              <button onClick={() => fetchAVM(selectedProp, true)} disabled={loading}
                 className="flex items-center gap-1 text-[#1877F2] hover:text-[#1665d8] transition-colors text-xs font-semibold">
-                <RefreshCw className={`w-3.5 h-3.5 ${avmLoading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">{avmLoading ? 'Updating...' : 'Refresh'}</span>
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">{loading ? 'Updating...' : 'Refresh'}</span>
               </button>
             </div>
           </div>
@@ -202,38 +348,86 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
           )}
 
           {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-            <StatCard label="Est. Home Value" icon={TrendingUp} iconColor="text-[#1877F2]" accent="bg-[#e7f0fd]"
-              value={avmLoading ? <span className="text-base text-[#9ca3af] animate-pulse">Loading...</span> : fmt(avm?.estimatedValue)}
-              sub={avm ? `Range: ${fmt(avm.lowValue)} — ${fmt(avm.highValue)}` : null}
-              sub2={selectedProp.purchase_price ? `Purchased: ${fmt(selectedProp.purchase_price)}` : null} />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
 
-            <StatCard label="Home Equity" icon={DollarSign} iconColor="text-green-600" accent="bg-green-50"
-              value={avmLoading ? '—' : equity ? fmt(equity) : '—'}
-              sub={selectedProp.loan_balance ? `Loan balance: ${fmt(selectedProp.loan_balance)}` : null}>
+            {/* Value */}
+            <div className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold text-[#65676b] uppercase tracking-wider">Est. Value</span>
+                <div className="w-7 h-7 rounded-xl bg-[#e7f0fd] flex items-center justify-center">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#1877F2]" />
+                </div>
+              </div>
+              <div className="text-xl lg:text-2xl font-bold text-[#1a1a2e]">
+                {loading ? <span className="text-[#9ca3af] text-base animate-pulse">Loading...</span> : fmt(avm?.estimatedValue)}
+              </div>
+              {avm && <div className="text-[10px] text-[#65676b] mt-1">{fmt(avm.lowValue)} — {fmt(avm.highValue)}</div>}
+              {selectedProp.purchase_price && <div className="text-[10px] text-[#9ca3af] mt-0.5">Purchased: {fmt(selectedProp.purchase_price)}</div>}
+            </div>
+
+            {/* Equity */}
+            <div className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold text-[#65676b] uppercase tracking-wider">Equity</span>
+                <div className="w-7 h-7 rounded-xl bg-green-50 flex items-center justify-center">
+                  <DollarSign className="w-3.5 h-3.5 text-green-600" />
+                </div>
+              </div>
+              <div className="text-xl lg:text-2xl font-bold text-green-600">{loading ? '—' : fmt(equity)}</div>
+              {selectedProp.loan_balance && <div className="text-[10px] text-[#65676b] mt-1">Loan: {fmt(selectedProp.loan_balance)}</div>}
               <EquityMeter equity={equity} value={avm?.estimatedValue} />
-            </StatCard>
+              {equity && avm?.estimatedValue && (
+                <Link href="/dashboard/homeowner/heloc"
+                  className="mt-2 flex items-center justify-center gap-1.5 w-full py-1.5 bg-[#e7f0fd] hover:bg-[#1877F2] text-[#1877F2] hover:text-white rounded-lg text-[10px] font-bold transition-all">
+                  <ShoppingCart className="w-3 h-3" /> Shop HELOC Options
+                </Link>
+              )}
+            </div>
 
-            <StatCard label="Total Gain" icon={gainLoss >= 0 ? ArrowUpRight : ArrowDownRight}
-              iconColor={gainLoss >= 0 ? 'text-green-600' : 'text-red-500'}
-              accent={gainLoss >= 0 ? 'bg-green-50' : 'bg-red-50'}
-              value={<span className={gainLoss >= 0 ? 'text-green-600' : 'text-red-500'}>{avmLoading ? '—' : gainLoss ? fmt(Math.abs(gainLoss)) : '—'}</span>}
-              sub={gainPct != null ? `${gainPct >= 0 ? '+' : ''}${gainPct.toFixed(1)}% since purchase` : null}
-              sub2={selectedProp.purchase_date ? `Since ${new Date(selectedProp.purchase_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}` : null} />
+            {/* Gain */}
+            <div className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold text-[#65676b] uppercase tracking-wider">Total Gain</span>
+                <div className={`w-7 h-7 rounded-xl flex items-center justify-center ${gainLoss >= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
+                  {gainLoss >= 0
+                    ? <ArrowUpRight className="w-3.5 h-3.5 text-green-600" />
+                    : <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />}
+                </div>
+              </div>
+              <div className={`text-xl lg:text-2xl font-bold ${gainLoss >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                {loading ? '—' : gainLoss ? fmt(Math.abs(gainLoss)) : '—'}
+              </div>
+              {gainPct != null && (
+                <div className={`text-xs font-semibold mt-1 ${gainPct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                  {gainPct >= 0 ? '+' : ''}{gainPct.toFixed(1)}% since purchase
+                </div>
+              )}
+            </div>
 
-            <StatCard label="30yr Rate" icon={Percent} iconColor="text-purple-600" accent="bg-purple-50"
-              value={<span className="text-purple-600">{rate ? `${rate}%` : '—'}</span>}
-              sub="Freddie Mac national avg">
+            {/* Rate */}
+            <div className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-semibold text-[#65676b] uppercase tracking-wider">30yr Rate</span>
+                <div className="w-7 h-7 rounded-xl bg-purple-50 flex items-center justify-center">
+                  <Percent className="w-3.5 h-3.5 text-purple-600" />
+                </div>
+              </div>
+              <div className="text-xl lg:text-2xl font-bold text-purple-600">{rate ? `${rate}%` : '—'}</div>
+              <div className="text-[10px] text-[#65676b] mt-1">Freddie Mac avg</div>
               {selectedProp.loan_rate && (
-                <div className="mt-2 bg-[#f8f9fa] rounded-xl px-3 py-2 text-xs">
+                <div className="mt-2 bg-[#f8f9fa] rounded-lg px-2 py-1.5 text-[10px]">
                   <span className="text-[#65676b]">Your rate: </span>
                   <span className="text-[#1a1a2e] font-bold">{selectedProp.loan_rate}%</span>
                   {rate && selectedProp.loan_rate > rate && (
-                    <span className="text-[#1877F2] font-semibold ml-1">↓ Refi opportunity</span>
+                    <span className="text-[#1877F2] font-bold ml-1">↓ Refi?</span>
                   )}
                 </div>
               )}
-            </StatCard>
+              <Link href="/dashboard/homeowner/mortgage"
+                className="mt-2 flex items-center justify-center gap-1.5 w-full py-1.5 bg-purple-50 hover:bg-purple-600 text-purple-600 hover:text-white rounded-lg text-[10px] font-bold transition-all">
+                <ShoppingCart className="w-3 h-3" /> Shop Rates
+              </Link>
+            </div>
           </div>
 
           {/* Chart + Details */}
@@ -253,14 +447,14 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
                     <YAxis tick={{ fill: '#65676b', fontSize: 11 }} axisLine={false} tickLine={false}
                       tickFormatter={v => '$' + (v/1000).toFixed(0) + 'k'} />
                     <Tooltip
-                      contentStyle={{ background: 'white', border: '1px solid #e4e6eb', borderRadius: '12px', fontSize: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                      contentStyle={{ background: 'white', border: '1px solid #e4e6eb', borderRadius: '12px', fontSize: '12px' }}
                       formatter={v => [fmt(v), 'Est. Value']} />
                     <Area type="monotone" dataKey="value" stroke="#1877F2" strokeWidth={2.5} fill="url(#valGrad)" dot={false} />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="h-[180px] flex items-center justify-center text-[#9ca3af] text-sm">
-                  {avmLoading ? 'Loading chart...' : 'Add your purchase price to see trend'}
+                  {loading ? 'Loading chart...' : 'Add your purchase price to see trend'}
                 </div>
               )}
             </div>
@@ -295,9 +489,9 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
                     <span className="bg-[#1877F2] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{unreadMessages.length}</span>
                   )}
                 </h3>
-                <a href="/dashboard/homeowner/messages" className="text-[#1877F2] hover:underline text-xs font-semibold flex items-center gap-1">
+                <Link href="/dashboard/homeowner/messages" className="text-[#1877F2] hover:underline text-xs font-semibold flex items-center gap-1">
                   All <ChevronRight className="w-3 h-3" />
-                </a>
+                </Link>
               </div>
               {unreadMessages.length === 0 ? (
                 <div className="text-center py-5">
@@ -307,7 +501,7 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
               ) : (
                 <div className="space-y-2">
                   {unreadMessages.map(msg => (
-                    <div key={msg.id} className="flex items-start gap-3 p-3 bg-[#f8f9fa] rounded-xl hover:bg-[#f0f2f5] transition-colors cursor-pointer">
+                    <div key={msg.id} className="flex items-start gap-3 p-3 bg-[#f8f9fa] rounded-xl">
                       <div className="w-8 h-8 rounded-full bg-[#e7f0fd] flex items-center justify-center flex-shrink-0 text-[#1877F2] text-xs font-bold">
                         {msg.from?.full_name?.charAt(0) || '?'}
                       </div>
@@ -315,7 +509,7 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-[#1a1a2e] text-xs font-semibold">{msg.from?.full_name}</span>
                           <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold ${
-                            msg.message_type === 'rate_alert'   ? 'bg-purple-100 text-purple-600' :
+                            msg.message_type === 'rate_alert' ? 'bg-purple-100 text-purple-600' :
                             msg.message_type === 'value_update' ? 'bg-[#e7f0fd] text-[#1877F2]' :
                             'bg-[#f0f2f5] text-[#65676b]'
                           }`}>
@@ -336,8 +530,8 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
               </h3>
               <div className="space-y-3">
                 {[
-                  { label: 'Agent',  data: agent,  color: 'text-green-600',  bg: 'bg-green-50 border-green-200',    dot: 'bg-green-500' },
-                  { label: 'Lender', data: lender, color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',      dot: 'bg-blue-500' },
+                  { label: 'Agent',  data: agent,  color: 'text-green-600',  bg: 'bg-green-50 border-green-200',  dot: 'bg-green-500' },
+                  { label: 'Lender', data: lender, color: 'text-blue-600',   bg: 'bg-blue-50 border-blue-200',    dot: 'bg-blue-500' },
                 ].map(({ label, data, color, bg, dot }) => (
                   <div key={label} className={`flex items-center gap-3 p-3 rounded-xl border ${data ? bg : 'bg-[#f8f9fa] border-[#e4e6eb]'}`}>
                     <div className="relative flex-shrink-0">
@@ -367,6 +561,9 @@ export default function HomeownerDashboardClient({ profile, properties, unreadMe
 
       {showAddModal && (
         <AddPropertyModal onClose={() => setShowAddModal(false)} onAdded={() => { setShowAddModal(false); window.location.reload() }} />
+      )}
+      {showPortfolio && (
+        <MultiPropertyModal properties={properties} avmCache={avmCache} onClose={() => setShowPortfolio(false)} />
       )}
     </div>
   )

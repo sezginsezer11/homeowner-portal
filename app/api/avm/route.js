@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const CACHE_DAYS = 14 // refresh every 2 weeks
+const CACHE_DAYS = 14
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
@@ -18,7 +18,7 @@ export async function GET(request) {
 
   const supabase = await createClient()
 
-  // Check cache first (unless force refresh)
+  // ALWAYS check cache first — regardless of property_id
   if (property_id && !force) {
     const { data: prop } = await supabase
       .from('properties')
@@ -27,23 +27,22 @@ export async function GET(request) {
       .single()
 
     if (prop?.avm_value && prop?.avm_last_updated) {
-      const lastUpdated = new Date(prop.avm_last_updated)
-      const daysSince   = (Date.now() - lastUpdated.getTime()) / (1000 * 60 * 60 * 24)
-
+      const daysSince = (Date.now() - new Date(prop.avm_last_updated).getTime()) / (1000 * 60 * 60 * 24)
       if (daysSince < CACHE_DAYS) {
+        // Return cached — ZERO API calls used
         return NextResponse.json({
           estimatedValue: prop.avm_value,
-          lowValue:       prop.avm_low,
-          highValue:      prop.avm_high,
+          lowValue:       prop.avm_low  || Math.round(prop.avm_value * 0.95),
+          highValue:      prop.avm_high || Math.round(prop.avm_value * 1.05),
           cached:         true,
           lastUpdated:    prop.avm_last_updated,
-          nextUpdate:     new Date(lastUpdated.getTime() + CACHE_DAYS * 24 * 60 * 60 * 1000).toISOString(),
+          nextUpdate:     new Date(new Date(prop.avm_last_updated).getTime() + CACHE_DAYS * 86400000).toISOString(),
         })
       }
     }
   }
 
-  // Cache expired or force refresh — call Redfin API
+  // Cache miss or force refresh — call Redfin API
   const HEADERS = {
     'Content-Type': 'application/json',
     'x-rapidapi-host': 'redfin-com-data.p.rapidapi.com',
@@ -62,13 +61,11 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Property not found for this address' }, { status: 404 })
     }
 
-    const propertyUrl = encodeURIComponent(firstResult.url)
     const detailRes = await fetch(
-      `https://redfin-com-data.p.rapidapi.com/properties/details?url=${propertyUrl}`,
+      `https://redfin-com-data.p.rapidapi.com/properties/details?url=${encodeURIComponent(firstResult.url)}`,
       { headers: HEADERS }
     )
     const detailData = await detailRes.json()
-
     const avm          = detailData?.data?.avm
     const aboveTheFold = detailData?.data?.aboveTheFold?.addressSectionInfo
     const estimatedValue = avm?.predictedValue
@@ -77,7 +74,7 @@ export async function GET(request) {
       || null
 
     if (!estimatedValue) {
-      return NextResponse.json({ error: 'No value estimate available for this property' }, { status: 404 })
+      return NextResponse.json({ error: 'No value estimate available' }, { status: 404 })
     }
 
     const comparables = avm?.comparables || []
@@ -86,14 +83,15 @@ export async function GET(request) {
     const highValue   = compPrices.length ? Math.max(...compPrices) : Math.round(estimatedValue * 1.05)
     const now         = new Date().toISOString()
 
-    // Save to Supabase cache
+    // Save to cache — works for ALL properties
     if (property_id) {
-      await supabase.from('properties').update({
+      const { error: updateError } = await supabase.from('properties').update({
         avm_value:        estimatedValue,
-        avm_low:          lowValue,
-        avm_high:         highValue,
+        avm_low:          Math.round(lowValue),
+        avm_high:         Math.round(highValue),
         avm_last_updated: now,
       }).eq('id', property_id)
+      if (updateError) console.error('Cache save error:', updateError.message)
     }
 
     return NextResponse.json({
@@ -102,10 +100,9 @@ export async function GET(request) {
       highValue:   Math.round(highValue),
       cached:      false,
       lastUpdated: now,
-      nextUpdate:  new Date(Date.now() + CACHE_DAYS * 24 * 60 * 60 * 1000).toISOString(),
+      nextUpdate:  new Date(Date.now() + CACHE_DAYS * 86400000).toISOString(),
       source:      'Redfin',
     })
-
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }

@@ -9,20 +9,27 @@ export default async function HomeownerDashboard() {
 
   const { data: profile } = await supabase
     .from('profiles').select('*').eq('id', user.id).single()
-
   if (profile?.role !== 'homeowner') redirect('/dashboard')
 
   const { data: properties } = await supabase
-    .from('properties').select('*').eq('owner_id', user.id).order('created_at', { ascending: false })
+    .from('properties')
+    .select('*')
+    .eq('owner_id', user.id)
+    .order('created_at', { ascending: false })
 
   const { data: messages } = await supabase
-    .from('messages').select('*, from:from_id(full_name, role)')
-    .eq('to_id', user.id).eq('read', false).order('created_at', { ascending: false }).limit(5)
+    .from('messages')
+    .select('*, from:from_id(full_name, role)')
+    .eq('to_id', user.id)
+    .eq('read', false)
+    .order('created_at', { ascending: false })
+    .limit(5)
 
   const { data: relationships } = await supabase
     .from('relationships')
     .select('*, professional:professional_id(full_name, role, email, phone, company)')
     .eq('homeowner_id', user.id)
+    .eq('status', 'accepted')
 
   return (
     <HomeownerDashboardClient
