@@ -10,11 +10,9 @@ export async function GET() {
   const results = {}
 
   const tests = [
-    { name: 'search-by-url city', url: 'properties/search-by-url?url=https%3A%2F%2Fwww.redfin.com%2Fcity%2F16904%2FCA%2FSan-Diego&limit=3' },
-    { name: 'search-sale regionType 6', url: 'properties/search-sale?regionId=16904&regionType=6&limit=3' },
-    { name: 'search-sale regionType 2', url: 'properties/search-sale?regionId=16904&regionType=2&limit=3' },
-    { name: 'search-sale zip 92130', url: 'properties/search-sale?regionId=92130&regionType=2&limit=3' },
-    { name: 'search v2', url: 'Search?regionId=16904&regionType=6&limit=3' },
+    { name: 'search-by-url San Diego', url: 'properties/search-by-url?url=https%3A%2F%2Fwww.redfin.com%2Fcity%2F16904%2FCA%2FSan-Diego&limit=3' },
+    { name: 'search-by-url Carmel Valley', url: 'properties/search-by-url?url=https%3A%2F%2Fwww.redfin.com%2Fneighborhood%2F3873%2FCA%2FSan-Diego%2FCarmel-Valley&limit=3' },
+    { name: 'search-by-url 92130 zip', url: 'properties/search-by-url?url=https%3A%2F%2Fwww.redfin.com%2Fzipcode%2F92130&limit=3' },
   ]
 
   for (const test of tests) {
@@ -31,6 +29,7 @@ export async function GET() {
           address: data.data.homes[0].streetLine,
           price: data.data.homes[0].price,
           beds: data.data.homes[0].beds,
+          sqft: data.data.homes[0].sqFt,
         } : null
       }
     } catch(e) { results[test.name] = { error: e.message } }
