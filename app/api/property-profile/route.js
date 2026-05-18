@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { generatePropertySlug } from '@/lib/propertySlug'
 
 const HOST = 'redfin-com-data.p.rapidapi.com'
@@ -30,6 +31,7 @@ export async function GET(request) {
   }
 
   const supabase = await createClient()
+  const serviceSupabase = createServiceClient()
   const slug = generatePropertySlug(address, city, state, zip, unit)
 
   // Check DB first
@@ -199,7 +201,7 @@ export async function GET(request) {
   }
 
   // Upsert to Supabase
-  const { data: saved, error } = await supabase
+  const { data: saved, error } = await serviceSupabase
     .from('property_profiles')
     .upsert(profileData, { onConflict: 'slug' })
     .select()
