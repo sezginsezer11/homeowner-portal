@@ -55,7 +55,7 @@ export async function GET(request) {
       const sqft    = val(h?.sqFt) || val(h?.sqft)
       const beds    = val(h?.beds)
       const baths   = val(h?.baths)
-      const photo   = h?.photos?.[0] || h?.primaryPhoto || null
+      const photo   = h?.photoUrls?.[0] || h?.photos?.[0] || h?.primaryPhoto || h?.mediaBrowserInfo?.photos?.[0]?.photoUrls?.[0] || null
       const slug    = generatePropertySlug(address, city, state, zip, null)
 
       if (address && zip) {
@@ -63,7 +63,7 @@ export async function GET(request) {
           slug, state, city, address, zip,
           full_address: `${address}, ${city}, ${state} ${zip}`,
           beds, baths, sqft,
-          year_built: h?.yearBuilt,
+          year_built: val(h?.yearBuilt),
           property_type: propTypeMap[h?.propertyType] || null,
           photos: [photo].filter(Boolean),
           latitude: h?.latLong?.latitude,
@@ -81,7 +81,7 @@ export async function GET(request) {
       return {
         slug, address, city, state, zip,
         price, beds, baths, sqft,
-        year_built:     h?.yearBuilt,
+        year_built:     val(h?.yearBuilt),
         property_type:  propTypeMap[h?.propertyType] || 'Residential',
         photo,
         status:         'active',
