@@ -44,7 +44,15 @@ export async function GET(request) {
     const propTypeMap = { 3:'Condo/Townhome', 6:'Single Family', 13:'Townhome', 4:'Multi-Family', 8:'Land' }
 
     const listings = homes.map(h => {
-      const address = val(h?.streetLine) || ''
+      // Address can be nested object or {level,value} or string
+      const streetLineRaw = h?.streetLine
+      let address = ''
+      if (typeof streetLineRaw === 'string') address = streetLineRaw
+      else if (streetLineRaw?.value) address = streetLineRaw.value
+      else if (streetLineRaw?.streetNumber) {
+        address = [streetLineRaw.streetNumber, streetLineRaw.streetName, streetLineRaw.streetType].filter(Boolean).join(' ')
+        if (streetLineRaw.unitValue) address += ' ' + streetLineRaw.unitValue
+      }
       const city    = h?.city || ''
       const state   = h?.state || 'CA'
       const zip     = val(h?.zip) || val(h?.postalCode) || ''
