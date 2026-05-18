@@ -1,51 +1,77 @@
 'use client'
-
 import { useState } from 'react'
-import { MessageSquare, TrendingUp, DollarSign, Bell } from 'lucide-react'
+import { MessageSquare, Send, User, Clock, Tag, ChevronRight, ArrowLeft } from 'lucide-react'
 
 const TYPE_CONFIG = {
-  value_update: { label: 'Value Update', icon: TrendingUp, color: 'text-[#c9a84c]', bg: 'bg-[#c9a84c]/10 border-[#c9a84c]/20' },
-  rate_alert:   { label: 'Rate Alert',   icon: DollarSign, color: 'text-blue-400',  bg: 'bg-blue-900/20 border-blue-500/20' },
-  general:      { label: 'Message',      icon: MessageSquare, color: 'text-[#8fa1ad]', bg: 'bg-[#0f1623] border-[#344a57]/20' },
+  general:      { label:'Message',      cls:'bg-[#f0f2f5] text-[#65676b]' },
+  value_update: { label:'Value Update', cls:'bg-[#e7f0fd] text-[#1877F2]' },
+  rate_alert:   { label:'Rate Alert',   cls:'bg-purple-50 text-purple-600' },
 }
 
-export default function MessagesClient({ messages }) {
+export default function MessagesClient({ messages, userId }) {
   const [selected, setSelected] = useState(messages[0] || null)
+  const [reply, setReply]       = useState('')
+  const [sending, setSending]   = useState(false)
+
+  const handleReply = async () => {
+    if (!reply.trim() || !selected) return
+    setSending(true)
+    try {
+      await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to_id:        selected.from_id,
+          property_id:  selected.property_id,
+          subject:      `Re: ${selected.subject || 'Message'}`,
+          body:         reply,
+          message_type: 'general',
+        }),
+      })
+      setReply('')
+    } catch {}
+    finally { setSending(false) }
+  }
 
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-white">Messages</h1>
+    <div className="max-w-5xl mx-auto pb-10">
+      <h1 className="text-2xl font-bold text-[#1a1a2e] mb-5 flex items-center gap-2">
+        <MessageSquare className="w-6 h-6 text-[#1877F2]" /> Messages
+      </h1>
 
       {messages.length === 0 ? (
-        <div className="bg-[#1a2332] border border-[#344a57]/30 rounded-2xl p-16 text-center">
-          <MessageSquare className="w-12 h-12 text-[#344a57] mx-auto mb-4" />
-          <p className="text-white font-semibold">No messages yet</p>
-          <p className="text-[#8fa1ad] text-sm mt-1">Your agent and lender will reach out here</p>
+        <div className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card p-12 text-center">
+          <MessageSquare className="w-12 h-12 text-[#e4e6eb] mx-auto mb-4" />
+          <h3 className="text-[#1a1a2e] font-bold text-lg mb-1">No messages yet</h3>
+          <p className="text-[#65676b] text-sm">Messages from your agent and lender will appear here</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-160px)]">
-
-          {/* List */}
-          <div className="bg-[#1a2332] border border-[#344a57]/30 rounded-2xl overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-[#344a57]/20">
-              <p className="text-[#8fa1ad] text-xs">{messages.length} message{messages.length !== 1 ? 's' : ''}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[600px]">
+          {/* Message list */}
+          <div className="bg-white rounded-2xl border border-[#e4e6eb] shadow-card overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-[#e4e6eb] bg-[#f8f9fa]">
+              <h2 className="text-[#1a1a2e] font-bold text-sm">Inbox ({messages.length})</h2>
             </div>
-            <div className="overflow-y-auto flex-1">
+            <div className="flex-1 overflow-y-auto divide-y divide-[#f0f2f5]">
               {messages.map(msg => {
                 const cfg = TYPE_CONFIG[msg.message_type] || TYPE_CONFIG.general
-                const Icon = cfg.icon
+                const isSelected = selected?.id === msg.id
                 return (
                   <button key={msg.id} onClick={() => setSelected(msg)}
-                    className={`w-full text-left p-4 border-b border-[#344a57]/10 hover:bg-[#344a57]/10 transition-colors ${selected?.id === msg.id ? 'bg-[#344a57]/20' : ''}`}>
-                    <div className="flex items-start gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border ${cfg.bg}`}>
-                        <Icon className={`w-3.5 h-3.5 ${cfg.color}`} />
+                    className={`w-full text-left px-4 py-3.5 hover:bg-[#f8f9fa] transition-colors ${isSelected ? 'bg-[#e7f0fd] border-l-2 border-[#1877F2]' : ''}`}>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="w-7 h-7 rounded-full bg-[#e7f0fd] flex items-center justify-center text-[#1877F2] font-bold text-xs flex-shrink-0">
+                          {msg.from?.full_name?.charAt(0) || '?'}
+                        </div>
+                        <span className="text-[#1a1a2e] font-semibold text-xs truncate">{msg.from?.full_name}</span>
                       </div>
-                      <div className="min-w-0">
-                        <div className="text-white text-xs font-medium truncate">{msg.from?.full_name || 'Unknown'}</div>
-                        <div className="text-[#8fa1ad] text-xs truncate mt-0.5">{msg.subject || msg.body}</div>
-                        <div className="text-[#464d4f] text-[10px] mt-1">{new Date(msg.created_at).toLocaleDateString()}</div>
-                      </div>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${cfg.cls}`}>{cfg.label}</span>
+                    </div>
+                    <div className="text-[#65676b] text-xs font-medium truncate ml-9">{msg.subject || msg.body}</div>
+                    <div className="text-[#9ca3af] text-[10px] mt-1 ml-9 flex items-center gap-1">
+                      <Clock className="w-2.5 h-2.5" />
+                      {new Date(msg.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'})}
                     </div>
                   </button>
                 )
@@ -53,34 +79,63 @@ export default function MessagesClient({ messages }) {
             </div>
           </div>
 
-          {/* Detail */}
-          <div className="lg:col-span-2 bg-[#1a2332] border border-[#344a57]/30 rounded-2xl flex flex-col">
+          {/* Message detail */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-[#e4e6eb] shadow-card overflow-hidden flex flex-col">
             {selected ? (
-              <div className="p-6 flex flex-col h-full">
-                <div className="flex items-start gap-4 pb-6 border-b border-[#344a57]/20">
-                  <div className="w-12 h-12 rounded-full bg-[#344a57] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {selected.from?.full_name?.charAt(0) || '?'}
-                  </div>
-                  <div>
-                    <h2 className="text-white font-semibold">{selected.subject || 'No subject'}</h2>
-                    <div className="text-[#8fa1ad] text-sm mt-0.5">
-                      From <span className="text-white">{selected.from?.full_name}</span>
-                      {selected.from?.company && <span className="text-[#8fa1ad]"> · {selected.from.company}</span>}
+              <>
+                {/* Header */}
+                <div className="px-5 py-4 border-b border-[#e4e6eb] bg-[#f8f9fa]">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#e7f0fd] flex items-center justify-center text-[#1877F2] font-bold flex-shrink-0">
+                      {selected.from?.full_name?.charAt(0) || '?'}
                     </div>
-                    <div className="text-[#464d4f] text-xs mt-0.5">{new Date(selected.created_at).toLocaleString()}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[#1a1a2e] font-bold text-sm">{selected.from?.full_name}</span>
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold ${(TYPE_CONFIG[selected.message_type]||TYPE_CONFIG.general).cls}`}>
+                          {(TYPE_CONFIG[selected.message_type]||TYPE_CONFIG.general).label}
+                        </span>
+                      </div>
+                      <div className="text-[#65676b] font-semibold text-sm mt-0.5">{selected.subject || 'Message'}</div>
+                      <div className="text-[#9ca3af] text-xs flex items-center gap-1 mt-0.5">
+                        <Clock className="w-3 h-3" />
+                        {new Date(selected.created_at).toLocaleString('en-US', {month:'long', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'})}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 pt-6">
-                  <p className="text-[#dadde1] leading-relaxed text-sm whitespace-pre-line">{selected.body}</p>
+
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto p-5">
+                  <div className="bg-[#f8f9fa] rounded-2xl p-5 text-[#1a1a2e] text-sm leading-relaxed border border-[#e4e6eb]">
+                    {selected.body}
+                  </div>
                 </div>
-              </div>
+
+                {/* Reply */}
+                <div className="border-t border-[#e4e6eb] p-4">
+                  <div className="flex gap-2">
+                    <textarea value={reply} onChange={e => setReply(e.target.value)}
+                      placeholder="Write a reply..."
+                      rows={2}
+                      className="flex-1 px-3 py-2.5 bg-[#f8f9fa] border border-[#e4e6eb] rounded-xl text-[#1a1a2e] placeholder-[#9ca3af] focus:outline-none focus:border-[#1877F2] text-sm resize-none" />
+                    <button onClick={handleReply} disabled={!reply.trim() || sending}
+                      className="px-4 py-2.5 bg-[#1877F2] hover:bg-[#1665d8] text-white rounded-xl font-bold text-sm transition-colors disabled:opacity-40 flex items-center gap-2 self-end">
+                      <Send className="w-4 h-4" />
+                      {sending ? 'Sending...' : 'Send'}
+                    </button>
+                  </div>
+                </div>
+              </>
             ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <p className="text-[#464d4f] text-sm">Select a message to read</p>
+              <div className="flex-1 flex items-center justify-center text-center p-10">
+                <div>
+                  <MessageSquare className="w-10 h-10 text-[#e4e6eb] mx-auto mb-3" />
+                  <p className="text-[#9ca3af] text-sm">Select a message to read</p>
+                </div>
               </div>
             )}
           </div>
-
         </div>
       )}
     </div>

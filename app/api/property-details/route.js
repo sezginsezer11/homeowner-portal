@@ -6,10 +6,9 @@ export async function GET(request) {
   const city    = searchParams.get('city')
   const state   = searchParams.get('state') || 'CA'
   const zip     = searchParams.get('zip')
+  const debug   = searchParams.get('debug') === 'true'
 
-  if (!address || !city) {
-    return NextResponse.json({ error: 'Missing address' }, { status: 400 })
-  }
+  if (!address || !city) return NextResponse.json({ error: 'Missing address' }, { status: 400 })
 
   const HEADERS = {
     'Content-Type': 'application/json',
@@ -35,60 +34,62 @@ export async function GET(request) {
     const d = detail?.data
     const aboveTheFold = d?.aboveTheFold?.addressSectionInfo
 
-    // Flatten ALL amenity entries from all superGroups and amenityGroups
+    // Flatten ALL amenity entries
     const allEntries = (d?.belowTheFold?.amenitiesInfo?.superGroups || [])
       .flatMap(sg => (sg?.amenityGroups || []).flatMap(ag => ag?.amenityEntries || []))
 
-    // Search by partial name match, case insensitive
-    const findAmenity = (...terms) => {
+    const findVal = (...terms) => {
       for (const term of terms) {
-        const found = allEntries.find(a =>
-          a?.amenityName?.toLowerCase().includes(term.toLowerCase())
-        )
-        const val = found?.amenityValues?.[0]
-        if (val) return val
+        const found = allEntries.find(a => a?.amenityName?.toLowerCase().includes(term.toLowerCase()))
+        if (found?.amenityValues?.[0]) return found.amenityValues[0]
       }
       return null
     }
 
-    // Also check belowTheFold directly
-    const publicRecords = d?.belowTheFold?.publicRecordsInfo
-    const prSqft     = publicRecords?.sqFt || publicRecords?.sqft || publicRecords?.squareFeet
-    const prYearBuilt = publicRecords?.yearBuilt || publicRecords?.year_built
-    const prBeds     = publicRecords?.beds || publicRecords?.bedrooms
-    const prBaths    = publicRecords?.baths || publicRecords?.bathrooms
+    // Try public records first (most reliable for sqft/year)
+    const pr = d?.belowTheFold?.publicRecordsInfo
+    const prSqft      = pr?.sqFt || pr?.sqft || pr?.finishedSqFt || pr?.totalSqFt
+    const prYearBuilt = pr?.yearBuilt || pr?.year_built
+    const prBeds      = pr?.beds || pr?.bedrooms
+    const prBaths     = pr?.baths || pr?.bathrooms
 
-    // Try multiple field paths
-    const sqftRaw     = findAmenity('Sq. Ft', 'Square Feet', 'sqft', 'sq ft', 'Total Sq', 'Living Area', 'Floor Area')
-    const yearRaw     = findAmenity('Year Built', 'Built in', 'Year of Construction', 'Built')
-    const bedsRaw     = findAmenity('Beds', 'Bedrooms', 'Bed')
-    const bathsRaw    = findAmenity('Baths', 'Bathrooms', 'Bath')
+    // Then try amenities
+    const sqftRaw     = prSqft      || findVal('Sq. Ft', 'Square Feet', 'sqft', 'Total Sq', 'Finished Sq', 'Living Area', 'Floor Area', 'Total Floor')
+    const yearRaw     = prYearBuilt || findVal('Year Built', 'Built in', 'Built')
+    const bedsRaw     = prBeds      || findVal('Beds', 'Bedrooms', 'Bed')
+    const bathsRaw    = prBaths     || findVal('Baths', 'Bathrooms', 'Bath')
 
-    const sqft      = sqftRaw ? parseInt(sqftRaw.toString().replace(/[^0-9]/g,'')) : (prSqft ? parseInt(prSqft) : null)
-    const yearBuilt = yearRaw ? parseInt(yearRaw) : (prYearBuilt ? parseInt(prYearBuilt) : null)
-    const beds      = bedsRaw ? parseInt(bedsRaw) : (prBeds ? parseInt(prBeds) : aboveTheFold?.beds || null)
-    const baths     = bathsRaw ? parseFloat(bathsRaw) : (prBaths ? parseFloat(prBaths) : aboveTheFold?.baths || null)
+    // Also check MLS info
+    const mlsInfo = d?.belowTheFold?.mlsInfo
+    const mlsSqft = mlsInfo?.sqFt || mlsInfo?.sqft
+    const mlsYear = mlsInfo?.yearBuilt
+
+    const sqft      = sqftRaw ? parseInt(sqftRaw.toString().replace(/[^0-9]/g,'')) : (mlsSqft ? parseInt(mlsSqft) : null)
+    const yearBuilt = yearRaw ? parseInt(yearRaw) : (mlsYear ? parseInt(mlsYear) : null)
+    const beds      = bedsRaw  ? parseInt(bedsRaw)   : aboveTheFold?.beds  || null
+    const baths     = bathsRaw ? parseFloat(bathsRaw) : aboveTheFold?.baths || null
 
     const propTypeMap = { 3:'Condo/Townhome', 6:'Single Family', 13:'Townhome', 4:'Multi-Family', 8:'Land' }
-    const history = d?.belowTheFold?.propertyHistoryInfo?.events || []
-    const lastSale = history.find(e => e.historyEventType === 1 || e.eventDescription?.toLowerCase().includes('sold'))
-    const estimatedValue = d?.avm?.predictedValue
-      || aboveTheFold?.avmInfo?.predictedValue
-      || aboveTheFold?.priceInfo?.amount || null
+    const history    = d?.belowTheFold?.propertyHistoryInfo?.events || []
+    const lastSale   = history.find(e => e.historyEventType === 1 || e.eventDescription?.toLowerCase().includes('sold'))
+    const estimatedValue = d?.avm?.predictedValue || aboveTheFold?.avmInfo?.predictedValue || aboveTheFold?.priceInfo?.amount || null
 
-    // Log all amenity names for debugging
-    const amenityNames = allEntries.map(e => e?.amenityName).filter(Boolean)
-
-    return NextResponse.json({
-      found:          true,
-      propertyType:   propTypeMap[aboveTheFold?.propertyType] || 'Residential',
+    const response = {
+      found: true,
+      propertyType: propTypeMap[aboveTheFold?.propertyType] || 'Residential',
       beds, baths, sqft, yearBuilt, estimatedValue,
-      lastSalePrice:  lastSale?.price || null,
-      lastSaleDate:   lastSale?.eventDateString || null,
-      // Debug info
-      _amenityNames:  amenityNames,
-      _publicRecords: publicRecords,
-    })
+      lastSalePrice: lastSale?.price || null,
+      lastSaleDate:  lastSale?.eventDateString || null,
+    }
+
+    // Add debug info if requested
+    if (debug) {
+      response._allAmenityNames = allEntries.map(e => `${e?.amenityName}: ${e?.amenityValues?.join(',')}`).filter(Boolean)
+      response._publicRecords   = pr
+      response._mlsInfo         = mlsInfo
+    }
+
+    return NextResponse.json(response)
   } catch (err) {
     return NextResponse.json({ found: false, error: err.message })
   }
