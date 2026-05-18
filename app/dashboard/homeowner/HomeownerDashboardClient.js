@@ -127,6 +127,8 @@ export default function HomeownerDashboardClient({profile, properties, unreadMes
   const [showAddModal, setShowAddModal]   = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [editingProp, setEditingProp]     = useState(null)
+  const [showOfferModal, setShowOfferModal] = useState(false)
+  const [offerProp, setOfferProp]           = useState(null)
   const [rate, setRate]                   = useState(null)
   const [valueHistory, setValueHistory]   = useState([])
 
