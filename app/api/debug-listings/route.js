@@ -1,31 +1,31 @@
 import { NextResponse } from 'next/server'
 
-const RAPIDAPI_HOST = 'realtor-search.p.rapidapi.com'
+const HOST = 'redfin-com-data.p.rapidapi.com'
 const HEADERS = {
-  'x-rapidapi-host': RAPIDAPI_HOST,
+  'x-rapidapi-host': HOST,
   'x-rapidapi-key': process.env.RAPIDAPI_KEY,
 }
 
 export async function GET() {
   const results = {}
 
+  // Test autocomplete to see exact response structure
   try {
-    const r1 = await fetch(
-      `https://${RAPIDAPI_HOST}/properties/search-buy?location=San-Diego_CA&limit=3`,
+    const r = await fetch(
+      `https://${HOST}/properties/auto-complete?query=San+Diego+CA`,
       { headers: HEADERS }
     )
-    results.test1_status = r1.status
-    results.test1_raw = await r1.json()
-  } catch(e) { results.test1_error = e.message }
+    results.autocomplete = await r.json()
+  } catch(e) { results.autocomplete_error = e.message }
 
+  // Test search-sale with different param formats
   try {
-    const r2 = await fetch(
-      `https://${RAPIDAPI_HOST}/properties/search-buy?city=San+Diego&state_code=CA&limit=3&sort=relevant`,
+    const r = await fetch(
+      `https://${HOST}/properties/search-sale?regionId=2295&regionType=6&limit=3`,
       { headers: HEADERS }
     )
-    results.test2_status = r2.status
-    results.test2_raw = await r2.json()
-  } catch(e) { results.test2_error = e.message }
+    results.search_2295 = await r.json()
+  } catch(e) { results.search_2295_error = e.message }
 
   return NextResponse.json(results)
 }
