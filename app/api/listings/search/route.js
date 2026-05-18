@@ -10,7 +10,10 @@ const HEADERS = {
 
 function val(f) {
   if (f == null) return null
-  if (typeof f === 'object' && 'value' in f) return f.value
+  if (typeof f === 'object') {
+    if ('value' in f) return f.value ?? null
+    return null  // object with no value key e.g. {level:1} - return null
+  }
   return f
 }
 
