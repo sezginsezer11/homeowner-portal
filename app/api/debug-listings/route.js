@@ -9,23 +9,28 @@ const HEADERS = {
 export async function GET() {
   const results = {}
 
-  // Test autocomplete to see exact response structure
-  try {
-    const r = await fetch(
-      `https://${HOST}/properties/auto-complete?query=San+Diego+CA`,
-      { headers: HEADERS }
-    )
-    results.autocomplete = await r.json()
-  } catch(e) { results.autocomplete_error = e.message }
+  const tests = [
+    'properties/search-sale?regionId=16904&regionType=6&limit=3',
+    'properties/search-sale?regionId=16904&regionType=2&limit=3',
+    'properties/search-sale?regionId=16904&regionType=6&limit=3&sort=1',
+    'properties/search-sale?regionId=16904&regionType=6&num=3',
+    'properties/search-sale?region_id=16904&region_type=6&limit=3',
+  ]
 
-  // Test search-sale with different param formats
-  try {
-    const r = await fetch(
-      `https://${HOST}/properties/search-sale?regionId=2295&regionType=6&limit=3`,
-      { headers: HEADERS }
-    )
-    results.search_2295 = await r.json()
-  } catch(e) { results.search_2295_error = e.message }
+  for (let i = 0; i < tests.length; i++) {
+    try {
+      const r = await fetch(`https://${HOST}/${tests[i]}`, { headers: HEADERS })
+      const data = await r.json()
+      results[`test${i+1}`] = {
+        url: tests[i],
+        status: r.status,
+        keys: Object.keys(data?.data || {}),
+        errors: data?.errors,
+        homes_count: data?.data?.homes?.length || 0,
+        message: data?.message,
+      }
+    } catch(e) { results[`test${i+1}_error`] = e.message }
+  }
 
   return NextResponse.json(results)
 }
