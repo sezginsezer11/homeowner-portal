@@ -1,71 +1,164 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Search, Home, Filter, MapPin, Bed, Bath, Square } from 'lucide-react'
+import { Search, MapPin, Bed, Bath, Square, Filter, Clock, TrendingDown, ChevronRight } from 'lucide-react'
+import { generatePropertySlug } from '@/lib/propertySlug'
 
-const SAMPLE_LISTINGS = [
-  { id:1, address:'4521 Ocean View Dr', city:'San Diego, CA 92130', price:1350000, beds:4, baths:3, sqft:2800, type:'Single Family', img:'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&q=80' },
-  { id:2, address:'892 Carmel Valley Rd', city:'San Diego, CA 92130', price:875000, beds:3, baths:2, sqft:1950, type:'Condo', img:'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&q=80' },
-  { id:3, address:'2201 Del Mar Heights', city:'Del Mar, CA 92014', price:2100000, beds:5, baths:4, sqft:4200, type:'Single Family', img:'https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=600&q=80' },
-  { id:4, address:'110 Pacific Coast Hwy', city:'Solana Beach, CA 92075', price:1650000, beds:4, baths:3.5, sqft:3100, type:'Townhome', img:'https://images.unsplash.com/photo-1599427303058-f04cbcf4756f?w=600&q=80' },
-  { id:5, address:'7845 Rancho Santa Fe Rd', city:'Rancho Santa Fe, CA 92067', price:4200000, beds:6, baths:5, sqft:6500, type:'Single Family', img:'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&q=80' },
-  { id:6, address:'3301 Torrey Pines Rd', city:'La Jolla, CA 92037', price:1890000, beds:4, baths:3, sqft:2950, type:'Single Family', img:'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?w=600&q=80' },
-]
+const STATUS_STYLES = {
+  active:  'bg-green-50 text-green-700 border-green-200',
+  pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  sold:    'bg-red-50 text-red-600 border-red-200',
+}
+
+function fmt(n) { return n ? '$' + Math.round(n).toLocaleString('en-US') : '—' }
 
 export default function BuyPage() {
-  const [search, setSearch] = useState('')
+  const [search, setSearch]     = useState('San Diego, CA')
+  const [listings, setListings] = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [filters, setFilters]   = useState({ minBeds:'', minBaths:'', minPrice:'', maxPrice:'', type:'' })
+
+  const fetchListings = async (query = 'San Diego, CA') => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/listings/search?query=${encodeURIComponent(query)}&limit=12`)
+      const data = await res.json()
+      setListings(data.listings || [])
+    } catch { setListings([]) }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { fetchListings() }, [])
+
+  const getPropertyLink = (listing) => {
+    const state   = listing.state || 'CA'
+    const city    = listing.city || 'San-Diego'
+    const address = listing.address || ''
+    const zip     = listing.zip || ''
+    return generatePropertySlug(address, city, state, zip, null)
+  }
+
+  const filtered = listings.filter(l => {
+    if (filters.minBeds && l.beds < parseInt(filters.minBeds)) return false
+    if (filters.minBaths && l.baths < parseFloat(filters.minBaths)) return false
+    if (filters.minPrice && l.price < parseInt(filters.minPrice)) return false
+    if (filters.maxPrice && l.price > parseInt(filters.maxPrice)) return false
+    return true
+  })
+
   return (
     <div>
-      {/* Hero */}
-      <div className="bg-[#1a1a2e] py-12 px-6">
+      {/* Hero search */}
+      <div className="bg-[#1a1a2e] py-10 px-6">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-black text-white mb-6">Find Your Dream Home</h1>
-          <div className="flex items-center gap-2 bg-white rounded-xl p-2">
-            <div className="flex-1 flex items-center gap-3 px-3">
-              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <input value={search} onChange={e=>setSearch(e.target.value)}
-                placeholder="City, Address, School, Agent, ZIP"
-                className="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none py-2" />
+          <h1 className="text-3xl font-black text-white mb-5">Find Your Dream Home</h1>
+          <div className="flex gap-2">
+            <div className="flex-1 flex items-center gap-3 bg-white rounded-xl px-4">
+              <Search className="w-4 h-4 text-[#9ca3af] flex-shrink-0"/>
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && fetchListings(search)}
+                placeholder="City, ZIP, Address, or Neighborhood"
+                className="flex-1 py-3.5 text-sm text-[#1a1a2e] placeholder-[#9ca3af] outline-none bg-transparent"/>
             </div>
-            <button className="px-6 py-3 bg-[#1877F2] text-white font-bold text-sm rounded-xl hover:bg-[#1665d8] transition-colors">Search</button>
+            <button onClick={() => fetchListings(search)}
+              className="px-6 py-3.5 bg-[#1877F2] hover:bg-[#1665d8] text-white font-bold text-sm rounded-xl transition-colors">
+              Search
+            </button>
+          </div>
+
+          {/* Quick filters */}
+          <div className="flex gap-2 mt-3 flex-wrap">
+            {[
+              { label:'2+ Beds', field:'minBeds', value:'2' },
+              { label:'3+ Beds', field:'minBeds', value:'3' },
+              { label:'Under $1M', field:'maxPrice', value:'1000000' },
+              { label:'Under $2M', field:'maxPrice', value:'2000000' },
+            ].map(f => (
+              <button key={f.label} onClick={() => setFilters(p => ({...p, [f.field]: p[f.field]===f.value ? '' : f.value}))}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  filters[f.field]===f.value ? 'bg-[#1877F2] text-white border-[#1877F2]' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+                }`}>
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Listings */}
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-[#1a1a2e]">{SAMPLE_LISTINGS.length} homes available <span className="text-gray-400 font-normal text-base">— San Diego Area</span></h2>
-          <button className="flex items-center gap-2 border border-gray-200 px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:border-[#1877F2] hover:text-[#1877F2] transition-all">
-            <Filter className="w-4 h-4" /> Filters
-          </button>
+      {/* Listings grid */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-[#1a1a2e] font-bold">
+            {loading ? 'Loading...' : `${filtered.length} homes`}
+            <span className="text-[#65676b] font-normal text-sm ml-2">in {search}</span>
+          </h2>
+          <div className="text-xs text-[#9ca3af] flex items-center gap-1">
+            <Clock className="w-3 h-3"/> Updated daily
+          </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {SAMPLE_LISTINGS.map(l => (
-            <div key={l.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 group cursor-pointer">
-              <div className="relative h-52 overflow-hidden">
-                <img src={l.img} alt={l.address} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute top-3 left-3 bg-white text-[#1877F2] text-[10px] font-bold px-2.5 py-1 rounded-full">{l.type}</div>
-              </div>
-              <div className="p-4">
-                <div className="text-2xl font-black text-[#1a1a2e] mb-1">${l.price.toLocaleString()}</div>
-                <div className="text-sm font-semibold text-gray-700">{l.address}</div>
-                <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5 mb-3"><MapPin className="w-3 h-3" />{l.city}</div>
-                <div className="flex items-center gap-4 text-xs text-gray-500 border-t border-gray-50 pt-3">
-                  <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5" />{l.beds} bd</span>
-                  <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5" />{l.baths} ba</span>
-                  <span className="flex items-center gap-1"><Square className="w-3.5 h-3.5" />{l.sqft.toLocaleString()} sqft</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-10 text-center">
-          <p className="text-gray-500 text-sm mb-4">These are sample listings. Sign up to see live MLS data.</p>
-          <Link href="/auth/signup" className="inline-flex items-center gap-2 bg-[#1877F2] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#1665d8] transition-colors text-sm">
-            Sign Up to See All Listings
-          </Link>
-        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {Array.from({length:6}).map((_,i) => (
+              <div key={i} className="bg-[#f8f9fa] rounded-2xl h-72 animate-pulse border border-[#e4e6eb]"/>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16">
+            <Search className="w-10 h-10 text-[#e4e6eb] mx-auto mb-3"/>
+            <p className="text-[#65676b]">No listings found. Try a different search.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filtered.map((listing, i) => {
+              const propLink = getPropertyLink(listing)
+              const statusKey = listing.status || 'active'
+              return (
+                <Link key={i} href={propLink}
+                  className="bg-white rounded-2xl border border-[#e4e6eb] overflow-hidden hover:shadow-xl transition-all duration-300 group block">
+                  <div className="relative h-52 overflow-hidden bg-[#f0f2f5]">
+                    {listing.photo ? (
+                      <img src={listing.photo} alt={listing.address} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[#f0f2f5]">
+                        <Search className="w-10 h-10 text-[#c4c9d0]"/>
+                      </div>
+                    )}
+                    <div className="absolute top-3 left-3 flex gap-1.5">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${STATUS_STYLES[statusKey] || STATUS_STYLES.active}`}>
+                        {statusKey === 'active' ? 'For Sale' : statusKey.charAt(0).toUpperCase() + statusKey.slice(1)}
+                      </span>
+                      {listing.days_on_market && <span className="text-[10px] bg-black/50 text-white px-2 py-0.5 rounded-full">{listing.days_on_market}d</span>}
+                    </div>
+                    {listing.price_reduced && (
+                      <div className="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <TrendingDown className="w-2.5 h-2.5"/> Reduced
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="text-xl font-black text-[#1a1a2e] mb-1">{fmt(listing.price)}</div>
+                    <div className="text-sm font-semibold text-[#444] truncate">{listing.address}</div>
+                    <div className="text-xs text-[#9ca3af] flex items-center gap-1 mt-0.5 mb-3">
+                      <MapPin className="w-3 h-3"/>{listing.city}, {listing.state} {listing.zip}
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-[#65676b] border-t border-[#f0f2f5] pt-3">
+                      {listing.beds   && <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5"/>{listing.beds} bd</span>}
+                      {listing.baths  && <span className="flex items-center gap-1"><Bath className="w-3.5 h-3.5"/>{listing.baths} ba</span>}
+                      {listing.sqft   && <span className="flex items-center gap-1"><Square className="w-3.5 h-3.5"/>{Number(listing.sqft).toLocaleString()} sqft</span>}
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+
+        {!loading && listings.length > 0 && (
+          <p className="text-center text-xs text-[#9ca3af] mt-8">
+            Live listings from Realtor.com · Updated daily · Sign up to save searches and get alerts
+          </p>
+        )}
       </div>
     </div>
   )
