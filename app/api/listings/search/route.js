@@ -9,6 +9,12 @@ const HEADERS = {
   'x-rapidapi-key': process.env.RAPIDAPI_KEY,
 }
 
+function val(field) {
+  if (!field) return null
+  if (typeof field === 'object' && 'value' in field) return field.value
+  return field
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get('query') || 'San Diego, CA'
@@ -26,55 +32,44 @@ export async function GET(request) {
     const region = placeRows.find(r => r.type === '2' || r.type === '5') || placeRows[0]
     if (!region) return NextResponse.json({ listings: [], error: 'Location not found' })
 
-    // Use search-by-url with the region URL - more reliable than regionId/regionType
     const regionUrl = `https://www.redfin.com${region.url}`
-    const endpoint = type === 'rent' ? 'search-rent' : type === 'sold' ? 'search-sold' : 'search-sale'
 
-    // Try search-by-url first (more reliable)
+    // Step 2: Search by URL
+    const endpoint = type === 'rent' ? 'search-rent' : 'search-by-url'
     const searchRes = await fetch(
-      `https://${HOST}/properties/search-by-url?url=${encodeURIComponent(regionUrl)}&limit=${limit}`,
+      `https://${HOST}/properties/${endpoint}?url=${encodeURIComponent(regionUrl)}&limit=${limit}`,
       { headers: HEADERS }
     )
     const searchData = await searchRes.json()
-    let homes = searchData?.data?.homes || searchData?.data?.results || []
+    const homes = searchData?.data?.homes || []
 
-    // Fallback: try with idParts
-    if (homes.length === 0) {
-      const idParts = region.id.split('_')
-      const regionType = idParts[0]
-      const regionId   = idParts[1]
-      const fallbackRes = await fetch(
-        `https://${HOST}/properties/${endpoint}?regionId=${regionId}&regionType=${regionType}&limit=${limit}`,
-        { headers: HEADERS }
-      )
-      const fallbackData = await fallbackRes.json()
-      homes = fallbackData?.data?.homes || fallbackData?.data?.results || []
-    }
-
-    const supabase = await createClient()
     const serviceSupabase = createServiceClient()
     const propTypeMap = { 3:'Condo/Townhome', 6:'Single Family', 13:'Townhome', 4:'Multi-Family', 8:'Land' }
 
     const listings = homes.map(h => {
-      const address = h?.streetLine || h?.address || ''
+      const address = val(h?.streetLine) || val(h?.address) || ''
       const city    = h?.city || ''
       const state   = h?.state || 'CA'
       const zip     = h?.zip || h?.postalCode || ''
+      const price   = val(h?.price)
+      const sqft    = val(h?.sqFt) || val(h?.sqft)
+      const beds    = val(h?.beds)
+      const baths   = val(h?.baths)
+      const photo   = h?.photos?.[0] || h?.primaryPhoto || null
       const slug    = generatePropertySlug(address, city, state, zip, null)
 
       if (address && zip) {
         serviceSupabase.from('property_profiles').upsert({
           slug, state, city, address, zip,
           full_address: `${address}, ${city}, ${state} ${zip}`,
-          beds: h?.beds, baths: h?.baths,
-          sqft: h?.sqFt || h?.sqft,
+          beds, baths, sqft,
           year_built: h?.yearBuilt,
           property_type: propTypeMap[h?.propertyType] || null,
-          photos: (h?.photos || []).slice(0,5).filter(Boolean),
+          photos: [photo].filter(Boolean),
           latitude: h?.latLong?.latitude,
           longitude: h?.latLong?.longitude,
-          listing_status: type === 'sold' ? 'sold' : 'active',
-          list_price: h?.price?.value || h?.price,
+          listing_status: 'active',
+          list_price: price,
           days_on_market: h?.daysOnMarket,
           price_reduced: h?.isHot || false,
           listing_id: h?.listingId || h?.mlsId,
@@ -85,14 +80,11 @@ export async function GET(request) {
 
       return {
         slug, address, city, state, zip,
-        price:          h?.price?.value || h?.price,
-        beds:           h?.beds,
-        baths:          h?.baths,
-        sqft:           h?.sqFt || h?.sqft,
+        price, beds, baths, sqft,
         year_built:     h?.yearBuilt,
         property_type:  propTypeMap[h?.propertyType] || 'Residential',
-        photo:          h?.photos?.[0] || null,
-        status:         type === 'sold' ? 'sold' : 'active',
+        photo,
+        status:         'active',
         days_on_market: h?.daysOnMarket,
         price_reduced:  h?.isHot || false,
         listing_id:     h?.listingId,
@@ -100,7 +92,7 @@ export async function GET(request) {
       }
     })
 
-    return NextResponse.json({ listings, total: listings.length, region: region.name, regionUrl })
+    return NextResponse.json({ listings, total: listings.length, region: region.name })
   } catch (err) {
     return NextResponse.json({ listings: [], error: err.message })
   }
