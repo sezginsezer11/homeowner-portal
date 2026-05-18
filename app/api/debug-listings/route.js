@@ -7,33 +7,17 @@ const HEADERS = {
 }
 
 export async function GET() {
-  const results = {}
-
-  const tests = [
-    { name: 'search-by-url San Diego', url: 'properties/search-by-url?url=https%3A%2F%2Fwww.redfin.com%2Fcity%2F16904%2FCA%2FSan-Diego&limit=3' },
-    { name: 'search-by-url Carmel Valley', url: 'properties/search-by-url?url=https%3A%2F%2Fwww.redfin.com%2Fneighborhood%2F3873%2FCA%2FSan-Diego%2FCarmel-Valley&limit=3' },
-    { name: 'search-by-url 92130 zip', url: 'properties/search-by-url?url=https%3A%2F%2Fwww.redfin.com%2Fzipcode%2F92130&limit=3' },
-  ]
-
-  for (const test of tests) {
-    try {
-      const r = await fetch(`https://${HOST}/${test.url}`, { headers: HEADERS })
-      const data = await r.json()
-      results[test.name] = {
-        status: r.status,
-        message: data?.message,
-        errors: data?.errors,
-        homes_count: data?.data?.homes?.length || 0,
-        keys: Object.keys(data?.data || {}),
-        sample: data?.data?.homes?.[0] ? {
-          address: data.data.homes[0].streetLine,
-          price: data.data.homes[0].price,
-          beds: data.data.homes[0].beds,
-          sqft: data.data.homes[0].sqFt,
-        } : null
-      }
-    } catch(e) { results[test.name] = { error: e.message } }
-  }
-
-  return NextResponse.json(results)
+  const r = await fetch(
+    `https://${HOST}/properties/search-by-url?url=${encodeURIComponent('https://www.redfin.com/city/16904/CA/San-Diego')}&limit=1`,
+    { headers: HEADERS }
+  )
+  const data = await r.json()
+  const home = data?.data?.homes?.[0]
+  return NextResponse.json({
+    all_keys: home ? Object.keys(home) : [],
+    photo_related: home ? Object.fromEntries(
+      Object.entries(home).filter(([k]) => k.toLowerCase().includes('photo') || k.toLowerCase().includes('image') || k.toLowerCase().includes('media') || k.toLowerCase().includes('img'))
+    ) : {},
+    full_home: home,
+  })
 }
