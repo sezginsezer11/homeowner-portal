@@ -7,11 +7,9 @@ function fmt(n) { return n ? '$' + Math.round(n).toLocaleString('en-US') : '—'
 function fmtNum(n) { return n ? Number(n).toLocaleString('en-US') : null }
 
 const STATUS_MAP = {
-  'active': { label: 'For Sale', cls: 'bg-green-50 text-green-700 border-green-200' },
   'Active': { label: 'For Sale', cls: 'bg-green-50 text-green-700 border-green-200' },
-  'pending': { label: 'Pending', cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
   'Pending': { label: 'Pending', cls: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  'sold': { label: 'Sold', cls: 'bg-red-50 text-red-600 border-red-200' },
+  'Sold': { label: 'Sold', cls: 'bg-red-50 text-red-600 border-red-200' },
 }
 
 export default function BuyPage() {
@@ -40,7 +38,6 @@ export default function BuyPage() {
 
   return (
     <div>
-      {/* Hero */}
       <div className="bg-[#1a1a2e] py-10 px-6">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-black text-white mb-5">Find Your Dream Home</h1>
@@ -75,7 +72,6 @@ export default function BuyPage() {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-[#1a1a2e] font-bold">
@@ -100,18 +96,17 @@ export default function BuyPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((l, i) => {
               const statusInfo = STATUS_MAP[l.status] || STATUS_MAP['Active']
-              const propUrl = `/homes${l.slug}`
+              // Use Redfin's native URL directly
+              const propLink = l.url ? `/homes${l.url}` : '#'
               return (
-                <Link key={i} href={propUrl}
+                <Link key={i} href={propLink}
                   className="bg-white rounded-2xl border border-[#e4e6eb] overflow-hidden hover:shadow-xl transition-all duration-300 group block">
-                  {/* Photo */}
                   <div className="relative h-52 overflow-hidden bg-[#f0f2f5]">
                     {l.photo ? (
                       <img src={l.photo} alt={l.address} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center"><Home className="w-10 h-10 text-[#c4c9d0]"/></div>
                     )}
-                    {/* Badges */}
                     <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusInfo.cls}`}>{statusInfo.label}</span>
                       {l.is_new_construction && <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold">New</span>}
@@ -126,8 +121,6 @@ export default function BuyPage() {
                       <div className="absolute bottom-3 left-3 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full">{l.days_on_market}d on market</div>
                     )}
                   </div>
-
-                  {/* Info */}
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div className="text-xl font-black text-[#1a1a2e]">{fmt(l.price)}</div>
@@ -136,7 +129,6 @@ export default function BuyPage() {
                     <div className="text-sm font-semibold text-[#444] truncate">{l.address}</div>
                     <div className="text-xs text-[#9ca3af] flex items-center gap-1 mt-0.5 mb-3">
                       <MapPin className="w-3 h-3"/>{l.city}, {l.state} {l.zip}
-                      {l.location && <span className="ml-1 text-[#c4c9d0]">· {l.location}</span>}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-[#65676b] border-t border-[#f0f2f5] pt-3">
                       {l.beds   && <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5"/>{l.beds} bd</span>}
@@ -145,7 +137,7 @@ export default function BuyPage() {
                     </div>
                     {l.open_house && (
                       <div className="mt-2 text-[10px] text-green-700 bg-green-50 rounded-lg px-2 py-1 border border-green-200 font-semibold">
-                        Open House: {l.open_house}
+                        Open: {l.open_house}
                       </div>
                     )}
                   </div>
