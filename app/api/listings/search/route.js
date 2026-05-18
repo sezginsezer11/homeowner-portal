@@ -2,84 +2,97 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generatePropertySlug } from '@/lib/propertySlug'
 
-const RAPIDAPI_HOST = 'realtor-search.p.rapidapi.com'
+const HOST = 'redfin-com-data.p.rapidapi.com'
 const HEADERS = {
-  'x-rapidapi-host': RAPIDAPI_HOST,
+  'x-rapidapi-host': HOST,
   'x-rapidapi-key': process.env.RAPIDAPI_KEY,
 }
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
-  const query = searchParams.get('query') || 'San Diego, CA'
-  const limit = parseInt(searchParams.get('limit') || '12')
+  const query  = searchParams.get('query') || 'San Diego, CA'
+  const limit  = parseInt(searchParams.get('limit') || '12')
+  const type   = searchParams.get('type') || 'sale' // sale | rent | sold
 
   try {
+    // Step 1: Auto-complete to get region
     const acRes = await fetch(
-      `https://${RAPIDAPI_HOST}/properties/auto-complete?input=${encodeURIComponent(query)}`,
+      `https://${HOST}/properties/auto-complete?query=${encodeURIComponent(query)}`,
       { headers: HEADERS }
     )
     const acData = await acRes.json()
-    const cityResult = acData?.data?.autocomplete?.find(r => r.area_type === 'city') || acData?.data?.autocomplete?.[0]
-    if (!cityResult) return NextResponse.json({ listings: [], error: 'Location not found' })
+    const region = acData?.data?.[0]?.rows?.[0]
+    if (!region) return NextResponse.json({ listings: [], error: 'Location not found' })
 
-    const slugId = cityResult.slug_id
-    const city   = cityResult.city
-    const state  = cityResult.state_code
+    const regionId   = region.id?.split('_')?.[0] || region.id
+    const regionType = region.type || '6'
 
-    const buyRes = await fetch(
-      `https://${RAPIDAPI_HOST}/properties/search-buy?location=${encodeURIComponent(slugId)}&limit=${limit}`,
+    // Step 2: Search for properties
+    const endpoint = type === 'rent' ? 'search-rent' : type === 'sold' ? 'search-sold' : 'search-sale'
+    const searchRes = await fetch(
+      `https://${HOST}/properties/${endpoint}?regionId=${regionId}&regionType=${regionType}&limit=${limit}&sort=1`,
       { headers: HEADERS }
     )
-    const buyData = await buyRes.json()
-    const results = buyData?.data?.home_search?.results || []
+    const searchData = await searchRes.json()
+    const homes = searchData?.data?.homes || searchData?.data?.results || []
 
+    // Step 3: Transform + save to DB
     const supabase = await createClient()
-    const listings = results.map(r => {
-      const addr    = r?.location?.address
-      const desc    = r?.description
-      const address = addr?.line || ''
-      const city    = addr?.city || ''
-      const state   = addr?.state_code || 'CA'
-      const zip     = addr?.postal_code || ''
+    const listings = await Promise.all(homes.map(async (h) => {
+      const address = h?.streetLine || h?.address?.streetLine || ''
+      const city    = h?.city || h?.address?.city || ''
+      const state   = h?.state || h?.address?.state || 'CA'
+      const zip     = h?.zip || h?.address?.zip || h?.postalCode || ''
       const slug    = generatePropertySlug(address, city, state, zip, null)
 
+      const propTypeMap = {3:'Condo/Townhome',6:'Single Family',13:'Townhome',4:'Multi-Family',8:'Land'}
+
+      const listing = {
+        slug, address, city, state, zip,
+        price:          h?.price?.value || h?.price || null,
+        beds:           h?.beds || null,
+        baths:          h?.baths || null,
+        sqft:           h?.sqFt || h?.sqft || null,
+        year_built:     h?.yearBuilt || null,
+        property_type:  propTypeMap[h?.propertyType] || 'Residential',
+        photo:          h?.photos?.[0] || h?.primaryPhoto || null,
+        photos:         (h?.photos || []).slice(0, 5),
+        status:         type === 'sold' ? 'sold' : (h?.soldDate ? 'sold' : 'active'),
+        days_on_market: h?.daysOnMarket || null,
+        price_reduced:  h?.isHot || false,
+        listing_id:     h?.listingId || h?.mlsId || null,
+        lat:            h?.latLong?.latitude || null,
+        lon:            h?.latLong?.longitude || null,
+        url:            h?.url || null,
+      }
+
+      // Save to property_profiles in background
       if (address && zip) {
         supabase.from('property_profiles').upsert({
           slug, state, city, address, zip,
           full_address: `${address}, ${city}, ${state} ${zip}`,
-          beds: desc?.beds, baths: desc?.baths_consolidated || desc?.baths,
-          sqft: desc?.sqft, year_built: desc?.year_built,
-          property_type: desc?.type,
-          photos: r?.primary_photo?.href ? [r.primary_photo.href] : [],
-          latitude: r?.location?.address?.coordinate?.lat,
-          longitude: r?.location?.address?.coordinate?.lon,
-          listing_status: r?.status || 'active',
-          list_price: r?.list_price,
-          days_on_market: r?.days_on_market,
-          price_reduced: r?.price_reduced_amount > 0,
-          listing_id: r?.property_id,
-          mls_id: r?.mls?.id,
+          beds: listing.beds, baths: listing.baths,
+          sqft: listing.sqft, year_built: listing.year_built,
+          property_type: listing.property_type,
+          photos: listing.photos.filter(Boolean),
+          latitude: listing.lat,
+          longitude: listing.lon,
+          listing_status: listing.status,
+          list_price: listing.price,
+          days_on_market: listing.days_on_market,
+          price_reduced: listing.price_reduced,
+          listing_id: listing.listing_id,
           listing_status_updated_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }, { onConflict: 'slug' }).then(() => {}).catch(() => {})
       }
 
-      return {
-        slug, address, city, state, zip,
-        price: r?.list_price, beds: desc?.beds,
-        baths: desc?.baths_consolidated || desc?.baths,
-        sqft: desc?.sqft, year_built: desc?.year_built,
-        photo: r?.primary_photo?.href,
-        status: r?.status || 'active',
-        days_on_market: r?.days_on_market,
-        price_reduced: r?.price_reduced_amount > 0,
-        property_type: desc?.type,
-        listing_id: r?.property_id,
-      }
-    })
+      return listing
+    }))
 
-    return NextResponse.json({ listings, total: listings.length, location: slugId })
+    return NextResponse.json({ listings, total: listings.length, region: region.name || query })
   } catch (err) {
+    console.error('Search error:', err)
     return NextResponse.json({ listings: [], error: err.message })
   }
 }
