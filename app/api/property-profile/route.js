@@ -129,8 +129,8 @@ export async function GET(request) {
       cooling:       findAmenity('Cool', 'A/C', 'Air'),
       description:   btf?.publicRecordsInfo?.propertyTypeName || null,
       photos,
-      latitude:      mainData?.coordinates?.latitude || atf?.coordinates?.latitude || null,
-      longitude:     mainData?.coordinates?.longitude || atf?.coordinates?.longitude || null,
+      latitude:      mainData?.coordinates?.latitude || (atf?.coordinates ? atf.coordinates.latitude : null) || null,
+      longitude:     mainData?.coordinates?.longitude || (atf?.coordinates ? atf.coordinates.longitude : null) || null,
 
       // Sale history
       last_sale_price: lastSale?.price || null,
