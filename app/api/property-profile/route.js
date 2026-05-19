@@ -28,12 +28,10 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url)
   const redfinUrl = searchParams.get('redfin_url')
   const force     = searchParams.get('force') === 'true'
-
-  // Also support address-based (for dashboard AVM)
-  const address = searchParams.get('address')
-  const city    = searchParams.get('city')
-  const state   = searchParams.get('state') || 'CA'
-  const zip     = searchParams.get('zip')
+  const address   = searchParams.get('address')
+  const city      = searchParams.get('city')
+  const state     = searchParams.get('state') || 'CA'
+  const zip       = searchParams.get('zip')
 
   if (!redfinUrl && !address) {
     return NextResponse.json({ error: 'Missing redfin_url or address' }, { status: 400 })
@@ -44,16 +42,16 @@ export async function GET(request) {
 
   let propRedfinUrl = redfinUrl
 
-  // If address-based, get URL via autocomplete
+  // Address-based lookup via autocomplete
   if (!redfinUrl && address) {
-    const query  = encodeURIComponent(`${address}, ${city}, ${state} ${zip}`)
-    const acData = await fetchJSON(`https://${HOST}/properties/auto-complete?query=${query}`)
+    const query   = encodeURIComponent(`${address}, ${city}, ${state} ${zip}`)
+    const acData  = await fetchJSON(`https://${HOST}/properties/auto-complete?query=${query}`)
     const propRow = acData?.data?.[0]?.rows?.[0]
     if (!propRow?.url) return NextResponse.json({ found: false, error: 'Property not found' })
     propRedfinUrl = `https://www.redfin.com${propRow.url}`
   }
 
-  // Check DB first by redfin_url
+  // Check DB cache first
   if (!force) {
     const { data: cached } = await supabase
       .from('property_profiles')
@@ -62,20 +60,19 @@ export async function GET(request) {
       .not('building_data_fetched_at', 'is', null)
       .single()
 
-    if (cached?.building_data_fetched_at) {
-      // Check if listing status needs daily refresh
+    if (cached) {
       const needsListingUpdate = !cached.listing_status_updated_at ||
         (Date.now() - new Date(cached.listing_status_updated_at).getTime()) > 23 * 60 * 60 * 1000
 
       if (!needsListingUpdate) {
-        // Fully cached - return immediately, NO API call
         return NextResponse.json({ ...cached, cached: true })
       }
 
-      // Only refresh listing status (1 API call)
-          const [mainInfo, priceDrop] = await Promise.all([
-        fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(propRedfinUrl)}`),
-        fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(propRedfinUrl)}`),
+      // Refresh listing status only - use PATH not full URL
+      const urlPath = propRedfinUrl.replace('https://www.redfin.com', '')
+      const [mainInfo, priceDrop] = await Promise.all([
+        fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(urlPath)}`),
+        fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(urlPath)}`),
       ])
       const li = mainInfo?.data
       const update = {
@@ -87,29 +84,56 @@ export async function GET(request) {
         updated_at: new Date().toISOString(),
       }
       await serviceSupabase.from('property_profiles').update(update).eq('redfin_url', propRedfinUrl)
-      return NextResponse.json({ ...cached, ...update, cached: true, listing_refreshed: true })
+      return NextResponse.json({ ...cached, ...update, cached: true })
     }
   }
 
-  // Not in DB yet - fetch ALL data (multiple API calls, but only happens once ever)
+  // Not cached - fetch everything from Redfin
+  // KEY FIX: Use PATH (not full URL) for Redfin API calls
+  const urlPath = propRedfinUrl.replace('https://www.redfin.com', '')
   const now = new Date()
 
-  // Use full Redfin URL for API calls
   const [details, amenities, extraInfo, walkScore, floodInfo, agent, mainInfo, priceDrop] = await Promise.all([
-    fetchJSON(`https://${HOST}/properties/details?url=${encodeURIComponent(propRedfinUrl)}`),
-    fetchJSON(`https://${HOST}/properties/amenities?url=${encodeURIComponent(propRedfinUrl)}`),
-    fetchJSON(`https://${HOST}/properties/extra-info?url=${encodeURIComponent(propRedfinUrl)}`),
-    fetchJSON(`https://${HOST}/properties/walk-score?url=${encodeURIComponent(propRedfinUrl)}`),
-    fetchJSON(`https://${HOST}/properties/flood-info?url=${encodeURIComponent(propRedfinUrl)}`),
-    fetchJSON(`https://${HOST}/properties/get-agent?url=${encodeURIComponent(propRedfinUrl)}`),
-    fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(propRedfinUrl)}`),
-    fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/details?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/amenities?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/extra-info?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/walk-score?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/flood-info?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/get-agent?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(urlPath)}`),
   ])
 
-  const d   = details?.data
-  const atf = d?.aboveTheFold?.addressSectionInfo
-  const btf = d?.belowTheFold
-  const pr  = btf?.publicRecordsInfo || extraInfo?.data?.publicRecordsInfo
+  const d = details?.data
+
+  // KEY FIX: Correct data paths
+  const atfFull = d?.aboveTheFold          // Full aboveTheFold object
+  const atf     = atfFull?.addressSectionInfo  // Address info
+  const media   = atfFull?.mediaBrowserInfo    // Photos are HERE
+  const btf     = d?.belowTheFold
+  const pr      = btf?.publicRecordsInfo || extraInfo?.data?.publicRecordsInfo
+
+  // KEY FIX: Photos are in mediaBrowserInfo.photos[].photoUrls
+  const rawPhotos = media?.photos || []
+  const photos = rawPhotos.flatMap(p => {
+    if (!p) return []
+    if (typeof p === 'string') return [p]
+    // photoUrls is an object like {fullscreen: url, ...}
+    if (p?.photoUrls && typeof p.photoUrls === 'object') {
+      const urls = Object.values(p.photoUrls).filter(u => typeof u === 'string')
+      return urls.slice(0, 1) // take first URL per photo
+    }
+    if (p?.href && typeof p.href === 'string') return [p.href]
+    if (p?.url && typeof p.url === 'string') return [p.url]
+    return []
+  }).filter(Boolean).slice(0, 20)
+
+  // KEY FIX: Description is in d?.onMarket?.remarks or aiSummary
+  const listing_remarks = d?.onMarket?.remarks ||
+    d?.onMarket?.description ||
+    d?.aiSummary ||
+    btf?.publicRemarks ||
+    null
 
   const amenityEntries = (amenities?.data?.superGroups || btf?.amenitiesInfo?.superGroups || [])
     .flatMap(sg => (sg?.amenityGroups || []).flatMap(ag => ag?.amenityEntries || []))
@@ -123,77 +147,65 @@ export async function GET(request) {
 
   const sqft      = pr?.sqFt || pr?.finishedSqFt || findAmenity('Sq. Ft', 'Square Feet', 'Living Area')
   const yearBuilt = pr?.yearBuilt || findAmenity('Year Built', 'Built in', 'Built')
-  // Redfin photos can be objects with photoUrls array or strings
-  const rawPhotos = d?.photos || d?.belowTheFold?.mediaBrowserInfo?.photos || []
-  const photos = rawPhotos.slice(0, 20).flatMap(p => {
-    if (typeof p === 'string') return [p]
-    if (p?.photoUrls) return Object.values(p.photoUrls).filter(u => typeof u === 'string').slice(0,1)
-    if (p?.href) return [p.href]
-    if (p?.url) return [p.url]
-    return []
-  }).filter(Boolean)
   const history   = btf?.propertyHistoryInfo?.events || []
   const lastSale  = history.find(e => e.historyEventType === 1 || e.eventDescription?.toLowerCase().includes('sold'))
   const ws        = walkScore?.data
   const flood     = floodInfo?.data
   const agentData = agent?.data
   const li        = mainInfo?.data
-
   const propTypeMap = { 3:'Condo/Townhome', 6:'Single Family', 13:'Townhome', 4:'Multi-Family', 8:'Land' }
 
   const profileData = {
-    redfin_url: propRedfinUrl,
-    address:    address || null,
-    city:       city || null,
-    state, zip,
-    full_address: address ? `${address}, ${city}, ${state} ${zip}` : null,
-    beds:       atf?.beds || pr?.beds || null,
-    baths:      atf?.baths || pr?.baths || null,
-    sqft:       sqft ? parseInt(sqft.toString().replace(/[^0-9]/g,'')) : null,
-    year_built: yearBuilt ? parseInt(yearBuilt) : null,
-    lot_size:   pr?.lotSize ? parseInt(pr.lotSize) : null,
-    property_type: atf?.propertyType ? (propTypeMap[atf.propertyType] || 'Residential') : null,
-    stories:    findAmenity('Stories', 'Floors') ? parseInt(findAmenity('Stories','Floors')) : null,
-    parking:    findAmenity('Garage', 'Parking', 'Carport'),
-    hoa_fee:    findAmenity('HOA', 'Association Fee') ? parseFloat(findAmenity('HOA','Association Fee').toString().replace(/[^0-9.]/g,'')) : null,
-    heating:    findAmenity('Heat', 'Heating'),
-    cooling:    findAmenity('Cool', 'A/C', 'Air'),
+    redfin_url:     propRedfinUrl,
+    address:        address || atf?.streetAddress || null,
+    city:           city || atf?.city || null,
+    state:          state || atf?.state || null,
+    zip:            zip || atf?.zip || null,
+    full_address:   address ? `${address}, ${city}, ${state} ${zip}` : null,
+    beds:           atf?.beds || pr?.beds || null,
+    baths:          atf?.baths || pr?.baths || null,
+    sqft:           sqft ? parseInt(sqft.toString().replace(/[^0-9]/g,'')) : null,
+    year_built:     yearBuilt ? parseInt(yearBuilt) : null,
+    lot_size:       pr?.lotSize ? parseInt(pr.lotSize) : null,
+    property_type:  atf?.propertyType ? (propTypeMap[atf.propertyType] || 'Residential') : null,
+    stories:        findAmenity('Stories', 'Floors') ? parseInt(findAmenity('Stories','Floors')) : null,
+    parking:        findAmenity('Garage', 'Parking', 'Carport'),
+    hoa_fee:        findAmenity('HOA', 'Association Fee') ? parseFloat(findAmenity('HOA','Association Fee').toString().replace(/[^0-9.]/g,'')) : null,
+    heating:        findAmenity('Heat', 'Heating'),
+    cooling:        findAmenity('Cool', 'A/C', 'Air'),
     photos,
-    latitude:   atf?.coordinates?.latitude || null,
-    longitude:  atf?.coordinates?.longitude || null,
+    listing_remarks,
+    latitude:       atf?.coordinates?.latitude || null,
+    longitude:      atf?.coordinates?.longitude || null,
     last_sale_price: lastSale?.price || null,
     last_sale_date: lastSale?.eventDateString ? new Date(lastSale.eventDateString).toISOString().split('T')[0] : null,
-    sold_history: history.slice(0,10).map(e => ({ type: e.eventDescription, price: e.price, date: e.eventDateString })),
-    walk_score:    ws?.walkscore || null,
-    transit_score: ws?.transit?.score || null,
-    bike_score:    ws?.bike?.score || null,
-    noise_score:   ws?.noise?.score || null,
-    flood_zone:    flood?.floodZone || null,
-    flood_risk:    flood?.riskLevel || null,
-    listing_agent: agentData ? {
+    sold_history:   history.slice(0,10).map(e => ({ type: e.eventDescription, price: e.price, date: e.eventDateString })),
+    walk_score:     ws?.walkscore || null,
+    transit_score:  ws?.transit?.score || null,
+    bike_score:     ws?.bike?.score || null,
+    noise_score:    ws?.noise?.score || null,
+    flood_zone:     flood?.floodZone || null,
+    flood_risk:     flood?.riskLevel || null,
+    listing_agent:  agentData ? {
       name:    agentData?.name || agentData?.agentName,
       phone:   agentData?.phone || agentData?.phoneNumber,
       company: agentData?.brokerageName || agentData?.company,
       photo:   agentData?.photoUrl || agentData?.photo,
     } : null,
-    estimated_value: d?.avm?.predictedValue || atf?.avmInfo?.predictedValue || null,
-    avm_low:    d?.avm?.predictedRangeLow || null,
-    avm_high:   d?.avm?.predictedRangeHigh || null,
-    tax_history: Array.isArray(extraInfo?.data?.taxInfo) ? extraInfo.data.taxInfo.slice(0,5) : [],
-    listing_remarks: btf?.publicRemarks || btf?.remarks || d?.listingRemarks || 
-      (btf?.descriptionInfo?.displayText || btf?.descriptionInfo?.description || null),
-    // Listing status
-    listing_status: li?.mlsStatus || 'Active',
-    list_price:     val(li?.price) || null,
-    days_on_market: li?.daysOnMarket || null,
-    price_reduced:  priceDrop?.data?.hasPriceDrop || false,
-    listing_id:     li?.listingId || null,
-    mls_id:         val(li?.mlsId) || null,
-    // Timestamps
+    estimated_value: d?.avm?.predictedValue || null,
+    avm_low:         d?.avm?.predictedRangeLow || null,
+    avm_high:        d?.avm?.predictedRangeHigh || null,
+    tax_history:     Array.isArray(extraInfo?.data?.taxInfo) ? extraInfo.data.taxInfo.slice(0,5) : [],
+    listing_status:  li?.mlsStatus || 'Active',
+    list_price:      val(li?.price) || null,
+    days_on_market:  li?.daysOnMarket || null,
+    price_reduced:   priceDrop?.data?.hasPriceDrop || false,
+    listing_id:      li?.listingId || null,
+    mls_id:          val(li?.mlsId) || null,
     building_data_fetched_at:  now.toISOString(),
     sold_data_fetched_at:      now.toISOString(),
     listing_status_updated_at: now.toISOString(),
-    updated_at: now.toISOString(),
+    updated_at:                now.toISOString(),
   }
 
   const { data: saved, error } = await serviceSupabase
