@@ -38,12 +38,14 @@ function ScoreBar({ label, score, icon: Icon, color }) {
 }
 
 export default function PropertyPageClient({ profile: initialProfile, redfinUrl, pathStr }) {
+  // Need full details if no building data yet
+  const needsFullFetch = !initialProfile || !initialProfile?.building_data_fetched_at
   const [profile, setProfile] = useState(initialProfile)
-  const [loading, setLoading] = useState(!initialProfile)
+  const [loading, setLoading] = useState(needsFullFetch)
   const [activePhoto, setActivePhoto] = useState(0)
 
   useEffect(() => {
-    if (!initialProfile) {
+    if (needsFullFetch) {
       fetch(`/api/property-profile?redfin_url=${encodeURIComponent(redfinUrl)}`)
         .then(r => r.json())
         .then(data => { setProfile(data); setLoading(false) })
