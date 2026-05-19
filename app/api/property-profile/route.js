@@ -72,7 +72,8 @@ export async function GET(request) {
       }
 
       // Only refresh listing status (1 API call)
-      const urlPath = propRedfinUrl.replace('https://www.redfin.com', '')
+      // urlPath should start with / for Redfin API endpoints
+  const urlPath = propRedfinUrl.replace('https://www.redfin.com', '')
       const [mainInfo, priceDrop] = await Promise.all([
         fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(urlPath)}`),
         fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(urlPath)}`),
@@ -92,18 +93,20 @@ export async function GET(request) {
   }
 
   // Not in DB yet - fetch ALL data (multiple API calls, but only happens once ever)
+  // urlPath should start with / for Redfin API endpoints
   const urlPath = propRedfinUrl.replace('https://www.redfin.com', '')
   const now = new Date()
 
+  // Use full Redfin URL for API calls
   const [details, amenities, extraInfo, walkScore, floodInfo, agent, mainInfo, priceDrop] = await Promise.all([
-    fetchJSON(`https://${HOST}/properties/details?url=${encodeURIComponent(urlPath)}`),
-    fetchJSON(`https://${HOST}/properties/amenities?url=${encodeURIComponent(urlPath)}`),
-    fetchJSON(`https://${HOST}/properties/extra-info?url=${encodeURIComponent(urlPath)}`),
-    fetchJSON(`https://${HOST}/properties/walk-score?url=${encodeURIComponent(urlPath)}`),
-    fetchJSON(`https://${HOST}/properties/flood-info?url=${encodeURIComponent(urlPath)}`),
-    fetchJSON(`https://${HOST}/properties/get-agent?url=${encodeURIComponent(urlPath)}`),
-    fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(urlPath)}`),
-    fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(urlPath)}`),
+    fetchJSON(`https://${HOST}/properties/details?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/amenities?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/extra-info?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/walk-score?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/flood-info?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/get-agent?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(propRedfinUrl)}`),
+    fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(propRedfinUrl)}`),
   ])
 
   const d   = details?.data

@@ -49,8 +49,16 @@ export default function PropertyPageClient({ profile: initialProfile, redfinUrl,
     if (needsFullFetch) {
       fetch(`/api/property-profile?redfin_url=${encodeURIComponent(redfinUrl)}`)
         .then(r => r.json())
-        .then(data => { setProfile(data); setLoading(false) })
-        .catch(() => setLoading(false))
+        .then(data => {
+          if (data && !data.error) {
+            setProfile(data)
+          }
+          setLoading(false)
+        })
+        .catch(err => {
+          console.error('Property fetch error:', err)
+          setLoading(false)
+        })
     }
   }, [])
 
@@ -62,7 +70,9 @@ export default function PropertyPageClient({ profile: initialProfile, redfinUrl,
       .catch(() => setLoading(false))
   }
 
-  const photos = profile?.photos || []
+  // Normalize photos - ensure all are strings
+  const rawPhotos = profile?.photos || []
+  const photos = rawPhotos.filter(p => typeof p === 'string' && p.startsWith('http'))
   const status = profile?.listing_status || profile?.mls_status || 'Active'
 
   if (loading) return (
