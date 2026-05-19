@@ -1,6 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { Search, Home, TrendingUp, DollarSign, Key, Star, ArrowRight, Download, Smartphone, CheckCircle, MapPin, Phone, Mail, ChevronRight } from 'lucide-react'
 
 const TABS = [
@@ -32,7 +34,49 @@ const TESTIMONIALS = [
 ]
 
 export default function HomePageContent() {
+  const router = useRouter()
+  const [user, setUser] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [showOfferModal, setShowOfferModal] = useState(false)
   const [activeTab, setActiveTab] = useState('buy')
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (user) {
+        setUser(user)
+        const { data: p } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        setProfile(p)
+      }
+    })
+  }, [])
+
+  const handleGetOffer = (e) => {
+    e.preventDefault()
+    if (user) {
+      router.push('/dashboard/homeowner?offer=true')
+    } else {
+      router.push('/auth/signup?intent=offer')
+    }
+  }
+
+  const handleGetDashboard = (e) => {
+    e.preventDefault()
+    if (user) {
+      const role = profile?.role || 'homeowner'
+      router.push(`/dashboard/${role}`)
+    } else {
+      router.push('/auth/signup')
+    }
+  }
+
+  const handleHomeValueSearch = (address) => {
+    if (user) {
+      router.push(`/dashboard/homeowner?add_property=${encodeURIComponent(address)}`)
+    } else {
+      router.push(`/auth/signup?intent=homevalue&address=${encodeURIComponent(address)}`)
+    }
+  }
   const [search, setSearch] = useState('')
   const [agentForm, setAgentForm] = useState({ location:'', email:'', phone:'', help:'', financing: false })
   const [submitted, setSubmitted] = useState(false)
@@ -78,10 +122,15 @@ export default function HomePageContent() {
                   className="flex-1 bg-transparent text-gray-800 placeholder-gray-400 text-sm outline-none"
                 />
               </div>
-              <Link href={`${currentTab?.href}${search ? `?q=${encodeURIComponent(search)}` : ''}`}
-                className="w-12 h-12 bg-[#1877F2] hover:bg-[#1665d8] rounded-xl flex items-center justify-center transition-colors flex-shrink-0">
+              <button onClick={() => {
+                if (activeTab === 'homevalue' && search) {
+                  handleHomeValueSearch(search)
+                } else {
+                  window.location.href = `${currentTab?.href}${search ? `?q=${encodeURIComponent(search)}` : ''}`
+                }
+              }} className="w-12 h-12 bg-[#1877F2] hover:bg-[#1665d8] rounded-xl flex items-center justify-center transition-colors flex-shrink-0">
                 <Search className="w-5 h-5 text-white" />
-              </Link>
+              </button>
             </div>
           </div>
         </div>
@@ -151,10 +200,10 @@ export default function HomePageContent() {
                     </div>
                   ))}
                 </div>
-                <Link href="/auth/signup"
+                <button onClick={handleGetDashboard}
                   className="inline-flex items-center gap-2 bg-[#1877F2] hover:bg-[#1665d8] text-white font-bold px-8 py-4 rounded-xl transition-colors w-fit text-sm">
-                  Get Your Free Dashboard <ArrowRight className="w-4 h-4" />
-                </Link>
+                  {user ? 'Go to My Dashboard' : 'Get Your Free Dashboard'} <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
               <div className="hidden md:flex items-center justify-center p-10 bg-white/5">
                 <div className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-sm">
@@ -272,10 +321,10 @@ export default function HomePageContent() {
                     </div>
                   ))}
                 </div>
-                <Link href="/auth/signup?intent=offer"
+                <button onClick={handleGetOffer}
                   className="inline-flex items-center gap-2 bg-[#1877F2] hover:bg-[#1665d8] text-white font-bold px-8 py-4 rounded-xl transition-colors text-sm shadow-lg">
-                  ⚡ Get My Offers Now
-                </Link>
+                  ⚡ {user ? 'Get My Offers Now' : 'Get Started Free'}
+                </button>
                 <p className="text-gray-400 text-xs mt-3">Free · No obligation · Takes 2 minutes</p>
               </div>
               <div className="hidden md:block p-10">

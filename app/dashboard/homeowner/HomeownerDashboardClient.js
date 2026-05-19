@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Home, TrendingUp, DollarSign, MessageSquare, Plus, RefreshCw, ChevronRight, User, AlertCircle, Building2, Percent, ArrowUpRight, ArrowDownRight, Clock, ShoppingCart, Edit2, Search, BarChart2, Calendar, Zap } from 'lucide-react'
 import AddPropertyModal from './AddPropertyModal'
 import GetOfferModal from './GetOfferModal'
@@ -120,6 +121,7 @@ function PropertyCard({ prop, avm, avmLoading, onSelect, onEdit, onGetOffer, sel
 }
 
 export default function HomeownerDashboardClient({profile, properties, unreadMessages, relationships}) {
+  const searchParams = useSearchParams()
   const [selectedProp, setSelectedProp]   = useState(properties[0] || null)
   const [avmCache, setAvmCache]           = useState({})
   const [avmLoading, setAvmLoading]       = useState({})
@@ -136,6 +138,19 @@ export default function HomeownerDashboardClient({profile, properties, unreadMes
   const lender = relationships.find(r => r.professional?.role === 'lender')?.professional
 
   useEffect(() => { fetch('/api/rates').then(r => r.json()).then(d => setRate(d.rate)).catch(() => {}) }, [])
+
+  // Handle URL params from homepage CTAs
+  useEffect(() => {
+    const offerParam = searchParams.get('offer')
+    const addPropParam = searchParams.get('add_property')
+    if (offerParam === 'true') {
+      setShowOfferModal(true)
+      setOfferProp(properties[0] || null)
+    }
+    if (addPropParam) {
+      setShowAddModal(true)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     properties.forEach(p => fetchAVM(p, false))
