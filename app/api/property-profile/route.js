@@ -72,11 +72,9 @@ export async function GET(request) {
       }
 
       // Only refresh listing status (1 API call)
-      // urlPath should start with / for Redfin API endpoints
-  const urlPath = propRedfinUrl.replace('https://www.redfin.com', '')
-      const [mainInfo, priceDrop] = await Promise.all([
-        fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(urlPath)}`),
-        fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(urlPath)}`),
+          const [mainInfo, priceDrop] = await Promise.all([
+        fetchJSON(`https://${HOST}/properties/main-info?url=${encodeURIComponent(propRedfinUrl)}`),
+        fetchJSON(`https://${HOST}/properties/price-drop-info?url=${encodeURIComponent(propRedfinUrl)}`),
       ])
       const li = mainInfo?.data
       const update = {
@@ -93,8 +91,6 @@ export async function GET(request) {
   }
 
   // Not in DB yet - fetch ALL data (multiple API calls, but only happens once ever)
-  // urlPath should start with / for Redfin API endpoints
-  const urlPath = propRedfinUrl.replace('https://www.redfin.com', '')
   const now = new Date()
 
   // Use full Redfin URL for API calls
