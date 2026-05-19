@@ -8,38 +8,29 @@ const HEADERS = {
 
 export async function GET(request) {
   const { searchParams } = new URL(request.url)
-  const url = searchParams.get('url') || 'https://www.redfin.com/CA/San-Diego/7687-Marker-Rd-92130/home/6483646'
-  const path = url.replace('https://www.redfin.com', '')
-  const results = {}
+  const path = searchParams.get('path') || '/CA/San-Diego/7687-Marker-Rd-92130/home/6483646'
 
-  // Test full URL
-  try {
-    const r = await fetch(`https://${HOST}/properties/details?url=${encodeURIComponent(url)}`, { headers: HEADERS })
-    const data = await r.json()
-    results.full_url = {
-      status: r.status,
-      message: data?.message,
-      photo_count: data?.data?.photos?.length || 0,
-      first_photo: data?.data?.photos?.[0],
-      avm: data?.data?.avm?.predictedValue,
-      remarks: data?.data?.belowTheFold?.publicRemarks?.slice(0,150),
-      top_keys: Object.keys(data?.data || {}),
-    }
-  } catch(e) { results.full_url_error = e.message }
+  const r    = await fetch(`https://${HOST}/properties/details?url=${encodeURIComponent(path)}`, { headers: HEADERS })
+  const data = await r.json()
+  const d    = data?.data
+  const btf  = d?.belowTheFold
+  const atf  = d?.aboveTheFold
 
-  // Test path only
-  try {
-    const r = await fetch(`https://${HOST}/properties/details?url=${encodeURIComponent(path)}`, { headers: HEADERS })
-    const data = await r.json()
-    results.path_only = {
-      status: r.status,
-      message: data?.message,
-      photo_count: data?.data?.photos?.length || 0,
-      first_photo: data?.data?.photos?.[0],
-      avm: data?.data?.avm?.predictedValue,
-      remarks: data?.data?.belowTheFold?.publicRemarks?.slice(0,150),
-    }
-  } catch(e) { results.path_only_error = e.message }
-
-  return NextResponse.json(results)
+  return NextResponse.json({
+    all_top_keys: Object.keys(d || {}),
+    btf_keys: Object.keys(btf || {}),
+    atf_keys: Object.keys(atf || {}),
+    // Check every possible photo location
+    d_photos: d?.photos,
+    d_photoCount: d?.numPhotos,
+    btf_media: btf?.mediaBrowserInfo ? Object.keys(btf.mediaBrowserInfo) : null,
+    btf_photos: btf?.photos,
+    btf_media_photos: btf?.mediaBrowserInfo?.photos?.slice(0,2),
+    atf_photos: atf?.photos,
+    atf_addressSection_photos: atf?.addressSectionInfo?.photos,
+    // Description
+    btf_publicRemarks: btf?.publicRemarks?.slice(0,200),
+    btf_description: btf?.descriptionInfo,
+    atf_description: atf?.description,
+  })
 }
