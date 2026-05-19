@@ -123,7 +123,15 @@ export async function GET(request) {
 
   const sqft      = pr?.sqFt || pr?.finishedSqFt || findAmenity('Sq. Ft', 'Square Feet', 'Living Area')
   const yearBuilt = pr?.yearBuilt || findAmenity('Year Built', 'Built in', 'Built')
-  const photos    = (d?.photos || []).slice(0, 20).map(p => p?.href || p?.url || p).filter(p => typeof p === 'string')
+  // Redfin photos can be objects with photoUrls array or strings
+  const rawPhotos = d?.photos || d?.belowTheFold?.mediaBrowserInfo?.photos || []
+  const photos = rawPhotos.slice(0, 20).flatMap(p => {
+    if (typeof p === 'string') return [p]
+    if (p?.photoUrls) return Object.values(p.photoUrls).filter(u => typeof u === 'string').slice(0,1)
+    if (p?.href) return [p.href]
+    if (p?.url) return [p.url]
+    return []
+  }).filter(Boolean)
   const history   = btf?.propertyHistoryInfo?.events || []
   const lastSale  = history.find(e => e.historyEventType === 1 || e.eventDescription?.toLowerCase().includes('sold'))
   const ws        = walkScore?.data
@@ -172,6 +180,8 @@ export async function GET(request) {
     avm_low:    d?.avm?.predictedRangeLow || null,
     avm_high:   d?.avm?.predictedRangeHigh || null,
     tax_history: Array.isArray(extraInfo?.data?.taxInfo) ? extraInfo.data.taxInfo.slice(0,5) : [],
+    listing_remarks: btf?.publicRemarks || btf?.remarks || d?.listingRemarks || 
+      (btf?.descriptionInfo?.displayText || btf?.descriptionInfo?.description || null),
     // Listing status
     listing_status: li?.mlsStatus || 'Active',
     list_price:     val(li?.price) || null,

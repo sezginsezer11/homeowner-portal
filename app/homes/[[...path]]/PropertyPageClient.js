@@ -43,6 +43,7 @@ export default function PropertyPageClient({ profile: initialProfile, redfinUrl,
   const [profile, setProfile] = useState(initialProfile)
   const [loading, setLoading] = useState(needsFullFetch)
   const [activePhoto, setActivePhoto] = useState(0)
+  const [showFullDesc, setShowFullDesc] = useState(false)
 
   useEffect(() => {
     if (needsFullFetch) {
@@ -147,7 +148,17 @@ export default function PropertyPageClient({ profile: initialProfile, redfinUrl,
               <h1 className="text-base font-bold text-[#1a1a2e]">{profile.full_address || profile.address}</h1>
             </div>
             {profile.listing_remarks && (
-              <p className="mt-3 text-sm text-[#65676b] leading-relaxed line-clamp-3">{profile.listing_remarks}</p>
+              <div className="mt-3">
+                <p className={`text-sm text-[#65676b] leading-relaxed ${showFullDesc ? '' : 'line-clamp-4'}`}>
+                  {profile.listing_remarks}
+                </p>
+                {profile.listing_remarks.length > 200 && (
+                  <button onClick={() => setShowFullDesc(!showFullDesc)}
+                    className="text-[#1877F2] text-xs font-semibold mt-1 hover:underline">
+                    {showFullDesc ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
