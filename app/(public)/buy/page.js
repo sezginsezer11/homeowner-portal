@@ -19,7 +19,23 @@ const AI_EXAMPLES = [
   'Under $700k 2 bed 2 bath near good schools',
 ]
 
+// Safely convert any value to string
+function safeStr(v) {
+  if (v == null) return ''
+  if (typeof v === 'string') return v
+  if (typeof v === 'object') {
+    if ('value' in v) return v.value || ''
+    if (v.streetNumber) return [v.streetNumber, v.streetName, v.streetType, v.unitValue].filter(Boolean).join(' ')
+    return ''
+  }
+  return String(v)
+}
+
 function ListingCard({ l }) {
+  const address = safeStr(l.address)
+  const city    = safeStr(l.city)
+  const state   = safeStr(l.state)
+  const zip     = safeStr(l.zip)
   const statusInfo = STATUS_MAP[l.status] || STATUS_MAP['Active']
   const propLink = l.url ? `/homes${l.url}` : '#'
 
@@ -28,7 +44,7 @@ function ListingCard({ l }) {
       className="bg-white rounded-2xl border border-[#e4e6eb] overflow-hidden hover:shadow-xl transition-all duration-300 group block">
       <div className="relative h-52 overflow-hidden bg-[#f0f2f5]">
         {l.photo ? (
-          <img src={l.photo} alt={l.address} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+          <img src={l.photo} alt={address} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
         ) : (
           <div className="w-full h-full flex items-center justify-center"><Home className="w-10 h-10 text-[#c4c9d0]"/></div>
         )}
@@ -51,9 +67,9 @@ function ListingCard({ l }) {
           <div className="text-xl font-black text-[#1a1a2e]">{fmt(l.price)}</div>
           {l.price_per_sqft && <div className="text-[10px] text-[#9ca3af] mt-1">{fmt(l.price_per_sqft)}/sqft</div>}
         </div>
-        <div className="text-sm font-semibold text-[#444] truncate">{l.address}</div>
+        <div className="text-sm font-semibold text-[#444] truncate">{address}</div>
         <div className="text-xs text-[#9ca3af] flex items-center gap-1 mt-0.5 mb-3">
-          <MapPin className="w-3 h-3"/>{l.city}, {l.state} {l.zip}
+          <MapPin className="w-3 h-3"/>{city}, {state} {zip}
         </div>
         <div className="flex items-center gap-3 text-xs text-[#65676b] border-t border-[#f0f2f5] pt-3">
           {l.beds   && <span className="flex items-center gap-1"><Bed className="w-3.5 h-3.5"/>{l.beds} bd</span>}
