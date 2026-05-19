@@ -13,24 +13,24 @@ export async function GET(request) {
   const r    = await fetch(`https://${HOST}/properties/details?url=${encodeURIComponent(path)}`, { headers: HEADERS })
   const data = await r.json()
   const d    = data?.data
-  const btf  = d?.belowTheFold
   const atf  = d?.aboveTheFold
+  const btf  = d?.belowTheFold
+  const media = atf?.mediaBrowserInfo
 
   return NextResponse.json({
-    all_top_keys: Object.keys(d || {}),
-    btf_keys: Object.keys(btf || {}),
-    atf_keys: Object.keys(atf || {}),
-    // Check every possible photo location
-    d_photos: d?.photos,
-    d_photoCount: d?.numPhotos,
-    btf_media: btf?.mediaBrowserInfo ? Object.keys(btf.mediaBrowserInfo) : null,
-    btf_photos: btf?.photos,
-    btf_media_photos: btf?.mediaBrowserInfo?.photos?.slice(0,2),
-    atf_photos: atf?.photos,
-    atf_addressSection_photos: atf?.addressSectionInfo?.photos,
+    // Photos location
+    media_keys:        media ? Object.keys(media) : null,
+    media_photos:      media?.photos?.slice(0,2),
+    media_firstPhoto:  media?.photos?.[0],
+    media_photoCount:  media?.photos?.length,
     // Description
-    btf_publicRemarks: btf?.publicRemarks?.slice(0,200),
-    btf_description: btf?.descriptionInfo,
-    atf_description: atf?.description,
+    aiSummary:         d?.aiSummary?.slice(0,200),
+    p1_keys:           d?.p1 ? Object.keys(d.p1) : null,
+    listings_keys:     d?.listings ? Object.keys(d.listings) : null,
+    onMarket:          d?.onMarket ? Object.keys(d.onMarket) : null,
+    onMarket_remarks:  d?.onMarket?.remarks?.slice(0,200),
+    onMarket_description: d?.onMarket?.description?.slice(0,200),
+    // Address
+    address_info:      atf?.addressSectionInfo ? Object.keys(atf.addressSectionInfo) : null,
   })
 }
