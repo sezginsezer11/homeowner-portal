@@ -53,12 +53,13 @@ export async function GET(request) {
     propRedfinUrl = `https://www.redfin.com${propRow.url}`
   }
 
-  // ALWAYS check DB first
+  // Check DB first by redfin_url
   if (!force) {
     const { data: cached } = await supabase
       .from('property_profiles')
       .select('*')
       .eq('redfin_url', propRedfinUrl)
+      .not('building_data_fetched_at', 'is', null)
       .single()
 
     if (cached?.building_data_fetched_at) {
