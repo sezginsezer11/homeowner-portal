@@ -15,3 +15,13 @@ body {
 ::-webkit-scrollbar-thumb { background: #c8d0dc; border-radius: 2px; }
 * { -webkit-tap-highlight-color: transparent; }
 button, a { min-height: 36px; }
+
+
+/* Hide scrollbar for tab nav */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

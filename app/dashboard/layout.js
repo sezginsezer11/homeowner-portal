@@ -1,19 +1,20 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Sidebar from '@/components/Sidebar'
+import PublicNav from '@/components/public/PublicNav'
+import DashboardTabNav from '@/components/DashboardTabNav'
 
 export default async function DashboardLayout({ children }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+
   return (
-    <div className="flex min-h-screen bg-[#f8f9fa]">
-      <Sidebar profile={profile} />
-      <main className="flex-1 lg:ml-56 min-h-screen">
-        <div className="p-4 pt-16 lg:pt-6 lg:p-6">
-          {children}
-        </div>
+    <div className="min-h-screen bg-[#f8f9fa]">
+      <PublicNav />
+      <DashboardTabNav profile={profile} />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        {children}
       </main>
     </div>
   )
