@@ -12,9 +12,18 @@ function val(f) {
   if (f == null) return null
   if (typeof f === 'object') {
     if ('value' in f) return f.value ?? null
-    return null  // object with no value key e.g. {level:1} - return null
+    return null
   }
   return f
+}
+
+function parseAddress(h) {
+  const s = h?.streetLine
+  if (!s) return ''
+  if (typeof s === 'string') return s
+  if (s?.value) return s.value
+  if (s?.streetNumber) return [s.streetNumber, s.streetName, s.streetType, s.unitValue].filter(Boolean).join(' ')
+  return ''
 }
 
 export async function GET(request) {
@@ -47,24 +56,16 @@ export async function GET(request) {
     const propTypeMap = { 3:'Condo/Townhome', 6:'Single Family', 13:'Townhome', 4:'Multi-Family', 8:'Land' }
 
     const listings = homes.map(h => {
-      // Address can be nested object or {level,value} or string
-      const streetLineRaw = h?.streetLine
-      let address = ''
-      if (typeof streetLineRaw === 'string') address = streetLineRaw
-      else if (streetLineRaw?.value) address = streetLineRaw.value
-      else if (streetLineRaw?.streetNumber) {
-        address = [streetLineRaw.streetNumber, streetLineRaw.streetName, streetLineRaw.streetType].filter(Boolean).join(' ')
-        if (streetLineRaw.unitValue) address += ' ' + streetLineRaw.unitValue
-      }
+      const address = parseAddress(h)
       const city    = h?.city || ''
       const state   = h?.state || 'CA'
       const zip     = val(h?.zip) || val(h?.postalCode) || ''
       const price   = val(h?.price)
+      const photos  = h?.photos?.items || []
+      const photo   = photos[0] || null
       const sqft    = val(h?.sqFt)
       const beds    = val(h?.beds)
       const baths   = val(h?.baths)
-      const photos  = h?.photos?.items || []
-      const photo   = photos[0] || null
       const latLong = val(h?.latLong)
       const lat     = latLong?.latitude || null
       const lon     = latLong?.longitude || null
