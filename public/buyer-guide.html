@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Buyer Guide — Sez Sezer | Keller Williams Realty</title>
+<style>
+/* ═══ ALL SCOPED TO #szr-bg — NO GLOBAL RULES ═══ */
+#szr-bg{--f:"Optima","Optima Nova","URW Classico","Palatino Linotype","Palatino","Book Antiqua",Georgia,serif;--lake:#344a57;--deep:#263744;--ch:#464d4f;--sl:#8fa1ad;--cer:#b1a39b;--mist:#dadde1;--mtch:#e8e6e5;--warm:#f7f5f3;--wh:#ffffff;--gold:#c2a46a;--ybg:#fffbeb;--ybr:#fde68a;--gbg:#f0fdf4;--gbr:#86efac;font-family:var(--f)!important;font-size:16px;line-height:1.75;color:var(--ch);-webkit-font-smoothing:antialiased;box-sizing:border-box;max-width:960px;margin:0 auto;padding:32px 24px 80px}
+#szr-bg *,#szr-bg *::before,#szr-bg *::after{box-sizing:inherit}
+
+/* NAV */
+#szr-bg .szr-nav{background:var(--deep);border-radius:8px;padding:4px 10px;display:flex;align-items:center;overflow-x:auto;flex-wrap:wrap;scrollbar-width:none;margin-bottom:36px}
+#szr-bg .szr-nav::-webkit-scrollbar{display:none}
+#szr-bg .szr-nav a{display:inline-block;font-family:var(--f)!important;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--sl)!important;text-decoration:none!important;padding:12px 13px;white-space:nowrap;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;font-weight:normal!important;cursor:pointer}
+#szr-bg .szr-nav a:hover{color:var(--wh)!important;border-bottom-color:var(--gold)}
+#szr-bg .szr-nav a.on{color:var(--gold)!important;border-bottom-color:var(--gold)}
+
+/* HERO */
+#szr-bg .szr-hero{background:var(--deep);border-radius:8px;padding:68px 60px 60px;margin-bottom:28px;position:relative;overflow:hidden}
+#szr-bg .szr-hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(194,164,106,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(194,164,106,.05) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
+#szr-bg .szr-he{font-family:var(--f)!important;font-size:10px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin:0 0 26px!important;font-weight:normal!important;display:flex;align-items:center;gap:16px}
+#szr-bg .szr-he::after{content:'';flex:0 0 44px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+#szr-bg .szr-ht{font-family:var(--f)!important;font-size:clamp(38px,5vw,64px);font-weight:normal!important;color:var(--wh)!important;line-height:1.07;letter-spacing:-.015em;margin:0 0 12px!important}
+#szr-bg .szr-ht em{display:block;color:var(--cer)!important;font-style:italic;font-size:.7em;letter-spacing:.01em}
+#szr-bg .szr-hr{width:64px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:26px 0}
+#szr-bg .szr-hs{font-family:var(--f)!important;font-size:15px;color:var(--sl);max-width:460px;line-height:1.75;margin:0!important;font-weight:normal!important}
+#szr-bg .szr-dre{font-size:9px;letter-spacing:.22em;color:rgba(143,161,173,.4);text-transform:uppercase;margin-top:24px;font-family:var(--f)!important;font-weight:normal!important}
+
+/* TOPIC SQUARES */
+#szr-bg .szr-topics{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin:0 0 52px}
+#szr-bg .szr-topic{display:flex;flex-direction:column;align-items:flex-start;padding:22px 18px 20px;background:var(--deep);border-radius:8px;text-decoration:none!important;cursor:pointer;transition:transform .2s,box-shadow .2s;border:1px solid rgba(194,164,106,.18);position:relative;overflow:hidden}
+#szr-bg .szr-topic::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),rgba(194,164,106,.2));transform:scaleX(0);transform-origin:left;transition:transform .35s}
+#szr-bg .szr-topic:hover{transform:translateY(-4px);box-shadow:0 14px 36px rgba(38,55,68,.32)}
+#szr-bg .szr-topic:hover::after{transform:scaleX(1)}
+#szr-bg .szr-topic-ic{font-size:28px;margin:0 0 12px!important;display:block;line-height:1}
+#szr-bg .szr-topic-n{font-family:var(--f)!important;font-size:9px;letter-spacing:.28em;color:rgba(194,164,106,.6);margin:0 0 7px!important;font-weight:normal!important;text-transform:uppercase}
+#szr-bg .szr-topic-l{font-family:var(--f)!important;font-size:11.5px;color:rgba(255,255,255,.88);line-height:1.4;margin:0!important;font-weight:600!important;text-transform:uppercase;letter-spacing:.06em}
+
+/* SECTION */
+#szr-bg .szr-sec{padding:60px 0 52px;border-bottom:1px solid var(--mist);opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+#szr-bg .szr-sec.szr-vis{opacity:1;transform:none}
+#szr-bg .szr-sec:last-child{border-bottom:none}
+#szr-bg .szr-dark{background:var(--lake);border-radius:8px;padding:48px 44px;margin:0}
+#szr-bg .szr-dark .szr-ey{color:var(--gold)}
+#szr-bg .szr-dark .szr-ey::before{background:var(--gold)}
+#szr-bg .szr-dark .szr-ttl{color:var(--wh)!important}
+#szr-bg .szr-dark p{color:rgba(218,221,225,.82)}
+#szr-bg .szr-ey{font-family:var(--f)!important;font-size:9px;letter-spacing:.36em;text-transform:uppercase;color:var(--cer);margin:0 0 10px!important;display:flex;align-items:center;gap:14px;font-weight:normal!important}
+#szr-bg .szr-ey::before{content:'';width:22px;height:1px;background:currentColor;opacity:.6;flex-shrink:0}
+#szr-bg .szr-ttl{font-family:var(--f)!important;font-size:clamp(26px,3.5vw,40px);font-weight:normal!important;color:var(--lake)!important;letter-spacing:-.01em;line-height:1.1;margin:0 0 36px!important}
+#szr-bg p{font-family:var(--f)!important;font-size:15px;line-height:1.75;margin:0 0 14px!important;font-weight:normal!important}
+
+/* GLOSSARY */
+#szr-bg .szr-gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-bottom:24px}
+#szr-bg .szr-gt{background:var(--wh);padding:18px 20px 16px;border-radius:6px;border:1px solid var(--mist);transition:box-shadow .2s,transform .15s}
+#szr-bg .szr-gt:hover{box-shadow:0 4px 20px rgba(52,74,87,.08);transform:translateY(-2px)}
+#szr-bg .szr-gw{font-family:var(--f)!important;font-size:13px;font-weight:600!important;color:var(--lake);margin:0 0 6px!important;line-height:1.3}
+#szr-bg .szr-gd{font-family:var(--f)!important;font-size:12.5px;color:var(--ch);line-height:1.6;margin:0!important;font-weight:normal!important}
+#szr-bg .szr-gt-hi{background:#fffbf0;border-color:rgba(194,164,106,.5);border-left:3px solid var(--gold)}
+#szr-bg .szr-gt-hi .szr-gw{color:var(--deep)}
+#szr-bg .szr-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--f)!important;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);background:rgba(194,164,106,.14);padding:2px 8px;border-radius:20px;margin:0 0 8px!important;font-weight:600!important}
+
+/* CHECKBOX */
+#szr-bg .szr-cbr{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+#szr-bg .szr-cbv{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;min-width:20px;min-height:20px;border:2px solid var(--gold);border-radius:3px;background:var(--wh);transition:background .2s,border-color .2s;cursor:pointer;flex-shrink:0;position:relative}
+#szr-bg .szr-cbv-sm{width:17px;height:17px;min-width:17px;min-height:17px}
+#szr-bg .szr-cbv::after{content:'';display:none;position:absolute;left:5px;top:2px;width:5px;height:9px;border-right:2.5px solid var(--wh);border-bottom:2.5px solid var(--wh);transform:rotate(45deg)}
+#szr-bg .szr-cbv-sm::after{left:4px;top:1px;width:4px;height:7px}
+#szr-bg .szr-cbv.chk{background:#22c55e;border-color:#16a34a}
+#szr-bg .szr-cbv.chk::after{display:block}
+
+/* TIMELINE */
+#szr-bg .szr-tl{position:relative;padding-left:44px}
+#szr-bg .szr-tl::before{content:'';position:absolute;left:6px;top:24px;bottom:24px;width:2px;background:linear-gradient(to bottom,var(--gold),var(--cer) 60%,var(--mist))}
+#szr-bg .szr-tr-wrap{position:relative;margin-bottom:10px}
+#szr-bg .szr-tr-dot{position:absolute;left:-40px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--warm);border:2px solid var(--cer);z-index:2;pointer-events:none}
+#szr-bg .szr-tr-dot-k{background:var(--lake);border-color:var(--gold);width:14px;height:14px;left:-41px;top:19px;box-shadow:0 0 0 4px rgba(194,164,106,.15)}
+#szr-bg .szr-tr-card{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;background:var(--ybg);border:1px solid var(--ybr);border-radius:5px;cursor:pointer;transition:background .35s,border-color .35s;width:100%;position:relative}
+#szr-bg .szr-tr-card.szr-done{background:var(--gbg);border-color:var(--gbr)}
+#szr-bg .szr-tr-body{flex:1;min-width:0}
+#szr-bg .szr-tday{font-family:var(--f)!important;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sl);margin:0 0 2px!important;font-weight:normal!important}
+#szr-bg .szr-tdate{font-family:var(--f)!important;font-size:12px;color:var(--cer);font-style:italic;margin:0 0 3px!important}
+#szr-bg .szr-tev{font-family:var(--f)!important;font-size:14.5px;color:var(--ch);margin:0!important;font-weight:normal!important}
+#szr-bg .szr-tev b{color:var(--lake);font-weight:600!important}
+
+/* CARDS */
+#szr-bg .szr-c2{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;background:var(--mist);margin-bottom:24px;border-radius:4px;overflow:hidden}
+#szr-bg .szr-c3{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--mist);margin-bottom:24px;border-radius:4px;overflow:hidden}
+@media(max-width:680px){#szr-bg .szr-c2,#szr-bg .szr-c3{grid-template-columns:1fr}}
+#szr-bg .szr-card{background:var(--wh);padding:28px 24px;position:relative;overflow:hidden;transition:box-shadow .25s}
+#szr-bg .szr-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.16,1,.3,1)}
+#szr-bg .szr-card:hover{box-shadow:0 8px 36px rgba(52,74,87,.09)}
+#szr-bg .szr-card:hover::before{transform:scaleX(1)}
+#szr-bg .szr-cl{font-family:var(--f)!important;font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--sl);margin:0 0 10px!important;font-weight:normal!important}
+#szr-bg .szr-ct{font-family:var(--f)!important;font-size:19px;color:var(--lake);margin:0 0 12px!important;line-height:1.2;font-weight:normal!important}
+#szr-bg .szr-card p{font-size:13.5px!important;line-height:1.65;margin:0 0 8px!important;color:var(--ch)}
+#szr-bg .szr-ctip{font-family:var(--f)!important;font-size:12px;font-style:italic;color:var(--cer);border-top:1px solid var(--mtch);padding-top:10px;margin-top:10px!important;font-weight:normal!important}
+#szr-bg .szr-dark .szr-c2,#szr-bg .szr-dark .szr-c3{background:rgba(255,255,255,.1);border-radius:6px;overflow:hidden}
+#szr-bg .szr-dark .szr-card{background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.1)}
+#szr-bg .szr-dark .szr-cl{color:var(--gold)}
+#szr-bg .szr-dark .szr-ct{color:var(--wh)}
+#szr-bg .szr-dark .szr-card p{color:rgba(218,221,225,.8)}
+#szr-bg .szr-dark .szr-ctip{color:var(--cer);border-color:rgba(255,255,255,.1)}
+
+/* TIP BOX */
+#szr-bg .szr-tip{background:var(--deep);border-radius:6px;padding:32px 38px;margin-top:24px;position:relative;overflow:hidden}
+#szr-bg .szr-tip::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(var(--gold),var(--cer))}
+#szr-bg .szr-tipl{font-family:var(--f)!important;font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin:0 0 18px!important;font-weight:normal!important}
+#szr-bg .szr-tip ol{counter-reset:tip;list-style:none;display:flex;flex-direction:column;gap:14px;padding:0!important;margin:0!important}
+#szr-bg .szr-tip ol li{position:relative;font-family:var(--f)!important;font-size:14px;color:rgba(218,221,225,.85);padding-left:28px;line-height:1.7;counter-increment:tip;font-weight:normal!important;margin:0!important}
+#szr-bg .szr-tip ol li::before{content:counter(tip);position:absolute;left:0;top:-1px;font-size:19px;color:var(--gold);line-height:1.3}
+#szr-bg .szr-tip ol li strong{color:rgba(218,221,173,.95)}
+
+/* CALLOUT */
+#szr-bg .szr-call{display:flex;gap:16px;align-items:flex-start;border:1px solid var(--mist);padding:18px 22px;background:var(--warm);margin:20px 0 0;border-radius:5px}
+#szr-bg .szr-cbar{flex-shrink:0;width:3px;background:linear-gradient(var(--gold),var(--cer));border-radius:2px;align-self:stretch;min-height:20px}
+#szr-bg .szr-call p{font-size:14px!important;margin:0!important}
+#szr-bg .szr-call strong{color:var(--lake)}
+#szr-bg .szr-dark .szr-call{background:rgba(255,255,255,.06);border-color:rgba(194,164,106,.25)}
+#szr-bg .szr-dark .szr-call p{color:rgba(218,221,225,.82)}
+#szr-bg .szr-dark .szr-call strong{color:var(--gold)}
+
+/* FORM */
+#szr-bg .szr-form{background:var(--wh);border:1px solid var(--mist);border-radius:8px;padding:32px 40px;margin-bottom:20px}
+#szr-bg .szr-fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:16px 22px;margin-bottom:24px}
+#szr-bg .szr-fld label{display:block;font-family:var(--f)!important;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--sl);margin:0 0 6px!important;font-weight:normal!important}
+#szr-bg .szr-fld input{width:100%;border:1px solid var(--mist);border-radius:3px;padding:10px 11px;font-family:var(--f)!important;font-size:15px;color:var(--lake);background:var(--warm);outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+#szr-bg .szr-fld input:focus{border-color:var(--gold);background:var(--wh)}
+#szr-bg .szr-btn{background:var(--lake);color:var(--wh);border:none;border-radius:4px;padding:13px 28px;font-family:var(--f)!important;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:background .2s;font-weight:normal!important;display:inline-block;text-decoration:none!important}
+#szr-bg .szr-btn:hover{background:var(--deep)}
+#szr-bg .szr-btn-o{background:transparent;color:var(--lake);border:1px solid var(--mist);margin-left:10px}
+#szr-bg .szr-btn-o:hover{background:var(--warm);border-color:var(--lake)}
+#szr-bg .szr-fnote{font-family:var(--f)!important;font-size:12px;color:var(--sl);font-style:italic;margin:10px 0 0!important}
+
+/* SUMMARY */
+#szr-bg .szr-sum{background:var(--deep);border-radius:8px;padding:28px 36px;margin-bottom:28px;display:none}
+#szr-bg .szr-sum.on{display:block}
+#szr-bg .szr-sumt{font-family:var(--f)!important;font-size:9px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);margin:0 0 18px!important;font-weight:normal!important}
+#szr-bg .szr-sumg{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:14px 24px}
+#szr-bg .szr-suml{font-family:var(--f)!important;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--sl);margin:0 0 3px!important;font-weight:normal!important}
+#szr-bg .szr-sumv{font-family:var(--f)!important;font-size:16px;color:var(--wh);margin:0!important;font-weight:normal!important}
+#szr-bg .szr-sum-hi{background:rgba(194,164,106,.15);border:1px solid rgba(194,164,106,.35);border-radius:4px;padding:12px 14px}
+#szr-bg .szr-sum-hi .szr-suml{color:var(--gold)}
+#szr-bg .szr-sum-hi .szr-sumv{font-size:20px;color:var(--gold)}
+
+/* PITI */
+#szr-bg .szr-piti{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--mist);margin-bottom:28px;border-radius:4px;overflow:hidden}
+@media(max-width:600px){#szr-bg .szr-piti{grid-template-columns:repeat(2,1fr)}}
+#szr-bg .szr-pc{background:var(--wh);padding:32px 14px 28px;text-align:center}
+#szr-bg .szr-pl{font-family:var(--f)!important;font-size:52px;line-height:1;color:var(--lake);margin:0 0 4px!important;font-weight:normal!important;display:block}
+#szr-bg .szr-pn{font-family:var(--f)!important;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--lake);margin:0 0 12px!important;font-weight:600!important;display:block;opacity:1}
+#szr-bg .szr-pa{font-family:var(--f)!important;font-size:14px;color:var(--ch);margin:0 0 4px!important;font-weight:normal!important;display:block}
+#szr-bg .szr-pnt{font-family:var(--f)!important;font-size:11px;color:var(--sl);font-style:italic;margin:0!important;display:block}
+#szr-bg .szr-pdiv{width:32px;height:1px;background:var(--gold);margin:0 auto 12px;opacity:.5}
+
+/* MORTGAGE LINK */
+#szr-bg .szr-mlink{display:inline-flex;align-items:center;gap:10px;background:var(--lake);color:var(--wh)!important;text-decoration:none!important;padding:15px 26px;border-radius:4px;font-family:var(--f)!important;font-size:12px;letter-spacing:.16em;text-transform:uppercase;margin-top:22px;transition:background .2s;font-weight:normal!important}
+#szr-bg .szr-mlink:hover{background:var(--deep)!important;color:var(--wh)!important}
+#szr-bg .szr-mlink::after{content:'→';font-size:16px;margin-left:4px}
+
+/* CALENDAR */
+#szr-bg .szr-calt{font-family:var(--f)!important;font-size:10px;letter-spacing:.42em;text-transform:uppercase;color:var(--lake);text-align:center;margin:0 0 18px!important;font-weight:normal!important}
+#szr-bg .szr-calw{overflow-x:auto;border:1px solid var(--mist);border-radius:6px;margin-bottom:24px}
+#szr-bg .szr-cal{width:100%;min-width:500px;border-collapse:collapse}
+#szr-bg .szr-cal thead th{background:var(--lake);color:var(--mist);font-family:var(--f)!important;font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:normal!important;padding:12px 6px;text-align:center;border:none}
+#szr-bg .szr-cal tbody td{border:1px solid var(--mist)!important;padding:8px 7px;vertical-align:top;height:80px;width:14.28%;background:var(--wh)!important;position:relative;transition:background .3s}
+#szr-bg .szr-cal tbody td.szr-kd{background:var(--ybg)!important}
+#szr-bg .szr-cal tbody td.szr-done{background:var(--gbg)!important;border-color:var(--gbr)!important}
+#szr-bg .szr-cnum{font-family:var(--f)!important;font-size:10px;color:var(--sl);margin:0 0 3px!important;font-weight:normal!important;display:inline-block}
+#szr-bg .szr-kd .szr-cnum{width:20px;height:20px;background:var(--lake);color:var(--wh);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600!important;margin-bottom:4px!important}
+#szr-bg .szr-ctag{font-family:var(--f)!important;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:600!important;margin:0 0 2px!important;line-height:1.2}
+#szr-bg .szr-cdesc{font-family:var(--f)!important;font-size:9.5px;line-height:1.3;color:var(--ch);margin:0!important;font-weight:normal!important}
+#szr-bg .szr-cal-cbl{position:absolute;bottom:4px;right:4px;display:inline-flex;align-items:center;cursor:pointer}
+#szr-bg .tl{color:var(--lake)}
+#szr-bg .ta{color:#a0692a}
+#szr-bg .tg{color:#2e6b4f}
+#szr-bg .ts{color:#5a6e7f}
+
+/* FEES TABLE */
+#szr-bg .szr-fees{width:100%;border-collapse:collapse;font-family:var(--f)!important;font-size:13.5px}
+#szr-bg .szr-fees thead th{background:var(--lake);color:var(--wh);font-size:9px;letter-spacing:.22em;text-transform:uppercase;font-weight:normal!important;padding:12px 20px;text-align:left;border:none}
+#szr-bg .szr-fees thead th:last-child{text-align:right}
+#szr-bg .szr-fees tbody tr{border-bottom:1px solid var(--mtch)!important}
+#szr-bg .szr-fees tbody tr:hover{background:var(--warm)}
+#szr-bg .szr-fees td{padding:9px 20px;color:var(--ch);border:none!important}
+#szr-bg .szr-fees td:last-child{text-align:right}
+#szr-bg .szr-fees .fg td{background:var(--mtch);color:var(--lake);font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:7px 20px;font-weight:600!important}
+#szr-bg .szr-fees .ft td{border-top:2px solid var(--gold)!important;font-size:16px;color:var(--lake);padding:14px 20px;font-weight:600!important}
+
+/* PERSON GRID */
+#szr-bg .szr-pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:12px;margin-bottom:24px}
+@media(max-width:600px){#szr-bg .szr-pg{grid-template-columns:1fr}}
+#szr-bg .szr-per{border:1px solid rgba(255,255,255,.1);padding:24px 20px;background:rgba(255,255,255,.055);border-radius:6px;transition:background .25s,border-color .25s;position:relative;overflow:hidden}
+#szr-bg .szr-per::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),transparent);transform:scaleX(0);transform-origin:left;transition:transform .4s}
+#szr-bg .szr-per:hover{background:rgba(255,255,255,.1);border-color:rgba(194,164,106,.3)}
+#szr-bg .szr-per:hover::after{transform:scaleX(1)}
+#szr-bg .szr-pi{font-size:20px;margin:0 0 9px!important}
+#szr-bg .szr-pr{font-family:var(--f)!important;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 4px!important;font-weight:normal!important}
+#szr-bg .szr-pn{font-family:var(--f)!important;font-size:17px;color:var(--wh);margin:0 0 8px!important;line-height:1.2;font-weight:normal!important}
+#szr-bg .szr-pd{font-family:var(--f)!important;font-size:13px;color:rgba(218,221,225,.77);line-height:1.65;margin:0 0 8px!important;font-weight:normal!important}
+#szr-bg .szr-ptip{font-family:var(--f)!important;font-size:12px;font-style:italic;color:var(--cer);border-top:1px solid rgba(255,255,255,.09);padding-top:8px;margin:0!important;font-weight:normal!important}
+
+/* CHECKLIST */
+#szr-bg .szr-phd{font-family:var(--f)!important;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--lake);margin:0 0 12px!important;padding:9px 14px;background:var(--mtch);border-radius:4px;font-weight:600!important}
+#szr-bg .szr-ck-wrap{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:4px;background:var(--ybg);border:1px solid var(--ybr);margin-bottom:6px;transition:background .3s,border-color .3s;cursor:pointer;width:100%;position:relative}
+#szr-bg .szr-ck-wrap.szr-done{background:var(--gbg);border-color:var(--gbr)}
+#szr-bg .szr-ck-txt{font-family:var(--f)!important;font-size:14px;color:var(--ch);line-height:1.55;font-weight:normal!important;margin:0!important;flex:1}
+#szr-bg .szr-ck-wrap.szr-done .szr-ck-txt{text-decoration:line-through;color:var(--sl)}
+
+/* ─── OFFER PROCESS styles ─── */
+#szr-bg .op-card{background:var(--wh);border:1px solid var(--mist);border-radius:6px;padding:28px 28px 24px;position:relative;overflow:hidden;transition:box-shadow .25s,transform .2s}
+#szr-bg .op-card:hover{box-shadow:0 8px 36px rgba(52,74,87,.1);transform:translateY(-2px)}
+#szr-bg .op-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(to bottom,var(--gold),rgba(194,164,106,.2))}
+#szr-bg .op-num{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:var(--lake);font-family:var(--f)!important;font-size:13px;font-weight:600!important;color:var(--wh);flex-shrink:0;margin-bottom:14px}
+#szr-bg .op-num-gold{background:var(--gold);color:var(--deep)}
+#szr-bg .op-ey{font-family:var(--f)!important;font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--cer);margin:0 0 6px!important;font-weight:normal!important}
+#szr-bg .op-title{font-family:var(--f)!important;font-size:19px;font-weight:normal!important;color:var(--lake);line-height:1.2;margin:0 0 10px!important}
+#szr-bg .op-desc{font-family:var(--f)!important;font-size:14px;color:var(--ch);line-height:1.7;margin:0!important;font-weight:normal!important}
+#szr-bg .op-arrow{display:flex;flex-direction:column;align-items:center;padding:4px 0}
+#szr-bg .op-arrow-line{width:2px;height:28px;background:linear-gradient(to bottom,var(--gold),rgba(194,164,106,.4))}
+#szr-bg .op-arrow-head{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid var(--gold)}
+#szr-bg .op-fork{background:var(--mtch);border:1px solid var(--mist);border-radius:6px;padding:20px 24px;text-align:center}
+#szr-bg .op-fork-label{font-family:var(--f)!important;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--lake);font-weight:600!important;margin:0 0 4px!important}
+#szr-bg .op-fork-sub{font-family:var(--f)!important;font-size:13px;color:var(--sl);margin:0!important;font-weight:normal!important}
+#szr-bg .op-branch{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+#szr-bg .op-branch-stem{display:flex;flex-direction:column;align-items:center}
+#szr-bg .op-branch-stem-line{width:2px;height:36px;background:linear-gradient(to bottom,var(--gold),rgba(194,164,106,.4))}
+#szr-bg .op-branch-arrow-head{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--gold)}
+#szr-bg .op-bpill{display:inline-flex;align-items:center;gap:6px;font-family:var(--f)!important;font-size:9px;letter-spacing:.2em;text-transform:uppercase;font-weight:600!important;padding:4px 12px;border-radius:20px;margin:0 0 14px!important}
+#szr-bg .op-bpill-a{background:rgba(143,161,173,.15);color:var(--sl);border:1px solid var(--mist)}
+#szr-bg .op-bpill-b{background:rgba(194,164,106,.15);color:var(--gold);border:1px solid rgba(194,164,106,.3)}
+#szr-bg .op-card-a{border-color:var(--mist);background:#f0f4f6}
+#szr-bg .op-card-a::before{background:linear-gradient(to bottom,var(--sl),rgba(143,161,173,.2))}
+#szr-bg .op-card-a .op-title{color:#3d5a6b}
+#szr-bg .op-num-a{background:var(--sl);color:var(--wh)}
+#szr-bg .op-card-b{border-color:rgba(194,164,106,.4);background:#fffbf0}
+#szr-bg .op-card-b::before{background:linear-gradient(to bottom,var(--gold),rgba(194,164,106,.2))}
+#szr-bg .op-card-b .op-title{color:var(--deep)}
+#szr-bg .op-num-b{background:var(--gold);color:var(--deep)}
+#szr-bg .op-merge-col{display:flex;flex-direction:column;align-items:center}
+#szr-bg .op-merge-line{width:2px;height:36px;background:linear-gradient(to bottom,rgba(194,164,106,.4),var(--gold))}
+#szr-bg .op-final{background:var(--deep);border-radius:8px;padding:40px 44px;position:relative;overflow:hidden}
+#szr-bg .op-final::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(194,164,106,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(194,164,106,.055) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+#szr-bg .op-final-rule{width:48px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:16px 0 20px}
+#szr-bg .op-final .op-ey{color:var(--gold)}
+#szr-bg .op-final .op-title{color:var(--wh);font-size:26px}
+#szr-bg .op-final .op-desc{color:rgba(218,221,225,.85);font-size:15px}
+#szr-bg .op-daybadge{display:inline-flex;align-items:center;gap:8px;background:rgba(194,164,106,.2);border:1px solid rgba(194,164,106,.4);border-radius:4px;padding:10px 18px;margin-top:18px!important;font-family:var(--f)!important;font-size:13px;color:var(--gold);font-weight:normal!important;line-height:1.5}
+#szr-bg .op-daybadge b{font-weight:600!important;color:var(--wh)}
+@media(max-width:680px){#szr-bg .op-branch{grid-template-columns:1fr}#szr-bg .op-final{padding:32px 24px}}
+
+/* ─── PRINT BUTTON (screen only) ─── */
+#szr-print-fab{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;align-items:center;gap:9px;background:#263744;color:#fff;border:none;border-radius:4px;padding:13px 22px;font-size:11px;font-family:"Optima","Palatino Linotype",Georgia,serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px rgba(38,55,68,.38);transition:background .2s,transform .15s}
+#szr-print-fab:hover{background:#344a57;transform:translateY(-2px)}
+#szr-print-fab svg{flex-shrink:0}
+
+/* ═══════════════════════════════════════════════════════
+   PRINT STYLES — clean output, no cutoffs, portrait+landscape
+═══════════════════════════════════════════════════════ */
+@media print {
+
+  /* ── Suppress browser chrome (URL bar, date stamps) ── */
+  @page {
+    size: letter;
+    margin: 12mm 14mm;
+  }
+  @page :first { margin-top: 8mm; }
+
+  /* ── Reset body and container ── */
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    font-size: 12pt !important;
+  }
+
+  /* ── Hide screen-only UI elements ── */
+  #szr-print-fab,
+  #szr-bg .szr-nav,
+  #szr-bg .szr-hero,
+  #szr-bg .szr-topics,
+  #szr-bg .szr-btn,
+  #szr-bg .szr-btn-o,
+  #szr-bg .szr-mlink,
+  #szr-bg .szr-cal-cbl,
+  #szr-bg .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* ── Container: full width, no padding ── */
+  #szr-bg {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* ── Each section starts on a fresh page ── */
+  #szr-bg .szr-sec {
+    page-break-before: always !important;
+    break-before: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    opacity: 1 !important;
+    transform: none !important;
+    border-bottom: none !important;
+    padding: 20px 0 16px !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* First section: no leading page break */
+  #szr-bg #szr-terms {
+    page-break-before: avoid !important;
+    break-before: avoid !important;
+  }
+
+  /* ── Atoms that must never be sliced ── */
+  #szr-bg .szr-gt,
+  #szr-bg .szr-card,
+  #szr-bg .szr-tr-wrap,
+  #szr-bg .szr-tr-card,
+  #szr-bg .szr-ck-wrap,
+  #szr-bg .szr-per,
+  #szr-bg .szr-pc,
+  #szr-bg .op-card,
+  #szr-bg .op-final,
+  #szr-bg .szr-sum,
+  #szr-bg .szr-tip,
+  #szr-bg .szr-call,
+  #szr-bg .szr-form,
+  #szr-bg .szr-calw,
+  #szr-bg .szr-fees,
+  #szr-bg .szr-piti {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* ── Grid rows stay together ── */
+  #szr-bg .szr-gloss,
+  #szr-bg .szr-c2,
+  #szr-bg .szr-c3,
+  #szr-bg .szr-pg,
+  #szr-bg .op-branch,
+  #szr-bg .szr-sumg {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* ── Headings glued to content below ── */
+  #szr-bg .szr-ey,
+  #szr-bg .szr-ttl,
+  #szr-bg .szr-phd,
+  #szr-bg .szr-calt {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* ── Phase headers: avoid orphaning ── */
+  #szr-bg .szr-phd {
+    page-break-before: auto !important;
+    break-before: auto !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* ── Force backgrounds to print ── */
+  #szr-bg .szr-dark,
+  #szr-bg .szr-tip,
+  #szr-bg .szr-sum,
+  #szr-bg .szr-gt-hi,
+  #szr-bg .op-final,
+  #szr-bg .szr-fees thead,
+  #szr-bg .szr-fees .fg td,
+  #szr-bg .szr-cal thead,
+  #szr-bg .szr-kd,
+  #szr-bg .szr-ybg,
+  #szr-bg .szr-tr-card,
+  #szr-bg .szr-ck-wrap {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* ── Tighten padding for print density ── */
+  #szr-bg .szr-dark { padding: 20px 24px !important; }
+  #szr-bg .szr-tip  { padding: 18px 24px !important; }
+  #szr-bg .szr-form { padding: 18px 24px !important; }
+  #szr-bg .op-final { padding: 24px 28px !important; }
+
+  /* ── Reset animations and transitions ── */
+  #szr-bg .szr-gt,
+  #szr-bg .szr-card,
+  #szr-bg .szr-per,
+  #szr-bg .szr-pc,
+  #szr-bg .op-card,
+  #szr-bg .szr-ck-wrap,
+  #szr-bg .szr-tr-card {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* ── Summary always visible ── */
+  #szr-bg .szr-sum { display: block !important; }
+
+  /* ── Person cards: print-safe colors ── */
+  #szr-bg .szr-per {
+    border: 1px solid rgba(255,255,255,0.2) !important;
+  }
+
+  /* ── Links: clean ── */
+  a { text-decoration: none !important; color: inherit !important; }
+
+  /* ── Portrait layout ── */
+  @media (orientation: portrait) {
+    #szr-bg .szr-gloss { grid-template-columns: repeat(2, 1fr) !important; }
+    #szr-bg .szr-pg    { grid-template-columns: repeat(2, 1fr) !important; }
+    #szr-bg .szr-piti  { grid-template-columns: repeat(2, 1fr) !important; }
+    #szr-bg .szr-c3    { grid-template-columns: repeat(2, 1fr) !important; }
+    #szr-bg .op-branch { grid-template-columns: 1fr !important; }
+    #szr-bg .szr-sumg  { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+
+  /* ── Landscape layout ── */
+  @media (orientation: landscape) {
+    #szr-bg .szr-gloss { grid-template-columns: repeat(3, 1fr) !important; }
+    #szr-bg .szr-pg    { grid-template-columns: repeat(3, 1fr) !important; }
+    #szr-bg .szr-piti  { grid-template-columns: repeat(4, 1fr) !important; }
+    #szr-bg .szr-c3    { grid-template-columns: repeat(3, 1fr) !important; }
+    #szr-bg .op-branch { grid-template-columns: 1fr 1fr !important; }
+    #szr-bg .szr-sumg  { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+
+} /* end @media print */
+
+/* HELPERS */
+#szr-bg .szr-mut{color:var(--sl)}
+@media(max-width:700px){
+  #szr-bg .szr-hero{padding:44px 22px 40px}
+  #szr-bg .szr-dark{padding:34px 22px}
+  #szr-bg .szr-form{padding:24px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── FLOATING PRINT BUTTON (hidden on print) ── -->
+<button id="szr-print-fab" onclick="szrDoPrint()" aria-label="Print or save as PDF">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+    <rect x="6" y="14" width="12" height="8"></rect>
+  </svg>
+  Print / Save PDF
+</button>
+
+<!-- Global print helpers — outside IIFE so onclick can reach them -->
+<script>
+function szrForceVisible() {
+  document.querySelectorAll('#szr-bg .szr-sec').forEach(function(s) {
+    s.style.opacity = '1';
+    s.style.transform = 'none';
+    s.classList.add('szr-vis');
+  });
+  document.querySelectorAll(
+    '#szr-bg .szr-gt, #szr-bg .szr-card, #szr-bg .szr-tr-wrap, ' +
+    '#szr-bg .szr-per, #szr-bg .szr-pc, #szr-bg .op-card, #szr-bg .szr-ck-wrap'
+  ).forEach(function(el) {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+    el.style.transition = 'none';
+    el.style.animation = 'none';
+  });
+}
+function szrDoPrint() {
+  szrForceVisible();
+  // Small delay so DOM updates flush before print dialog
+  setTimeout(function() { window.print(); }, 120);
+}
+window.addEventListener('beforeprint', szrForceVisible);
+window.addEventListener('afterprint', function() {
+  document.querySelectorAll('#szr-bg .szr-card, #szr-bg .szr-gt').forEach(function(el) {
+    el.style.transition = '';
+  });
+});
+</script>
+<style>
+#szr-print-tip {
+  position: fixed; bottom: 80px; right: 28px; z-index: 9998;
+  background: #263744; color: rgba(218,221,225,0.9);
+  border: 1px solid rgba(194,164,106,0.3);
+  border-radius: 6px; padding: 10px 14px;
+  font-family: "Optima", Georgia, serif;
+  font-size: 11px; line-height: 1.5;
+  max-width: 220px; text-align: left;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  display: none;
+}
+#szr-print-tip strong { color: #c2a46a; display: block; margin-bottom: 3px; font-size: 10px; letter-spacing: .15em; text-transform: uppercase; }
+#szr-print-tip-close { float: right; cursor: pointer; color: #8fa1ad; margin-left: 6px; font-size: 14px; line-height: 1; }
+@media print { #szr-print-tip { display: none !important; } }
+</style>
+<div id="szr-print-tip">
+  <span id="szr-print-tip-close" onclick="this.parentElement.style.display='none'">×</span>
+  <strong>💡 Best Print Results</strong>
+  Download the file, then open it directly in Chrome or Safari and print from there for clean output without URL headers.
+</div>
+<script>
+// Show tip briefly when print button is clicked, then auto-hide
+var _tipShown = false;
+document.getElementById('szr-print-fab').addEventListener('mouseenter', function() {
+  if (!_tipShown) {
+    var tip = document.getElementById('szr-print-tip');
+    if (tip) tip.style.display = 'block';
+  }
+});
+document.getElementById('szr-print-fab').addEventListener('mouseleave', function() {
+  setTimeout(function() {
+    var tip = document.getElementById('szr-print-tip');
+    if (tip) { tip.style.display = 'none'; _tipShown = true; }
+  }, 4000);
+});
+</script>
+
+<div id="szr-bg">
+
+<!-- NAV -->
+<nav class="szr-nav">
+  <a onclick="sezGo('szr-terms')">Escrow Terms</a>
+  <a onclick="sezGo('szr-people')">Key People</a>
+  <a onclick="sezGo('szr-op')">Offer Process</a>
+  <a onclick="sezGo('szr-offer')">Offer Terms</a>
+  <a onclick="sezGo('szr-dates')">Timeline</a>
+  <a onclick="sezGo('szr-cal')">Calendar</a>
+  <a onclick="sezGo('szr-piti')">Payments</a>
+  <a onclick="sezGo('szr-ck')">Checklist</a>
+  <a onclick="sezGo('szr-fees')">Sample Fees</a>
+</nav>
+
+<!-- HERO -->
+<div class="szr-hero">
+  <div class="szr-he">Sez Sezer &nbsp;&middot;&nbsp; Keller Williams Realty</div>
+  <h1 class="szr-ht">Home Buyer Guide<em>Escrow Timeline</em></h1>
+  <div class="szr-hr"></div>
+  <p class="szr-hs">A step-by-step guide to navigating your purchase — from acceptance through the day you receive your keys.</p>
+  <div class="szr-dre">DRE #01988197</div>
+</div>
+
+<!-- TOPIC SQUARES -->
+<div class="szr-topics">
+  <a onclick="sezGo('szr-terms')" class="szr-topic"><span class="szr-topic-ic">📋</span><div class="szr-topic-n">01</div><div class="szr-topic-l">Escrow Real Estate Terms</div></a>
+  <a onclick="sezGo('szr-people')" class="szr-topic"><span class="szr-topic-ic">👥</span><div class="szr-topic-n">02</div><div class="szr-topic-l">Key People &amp; Companies</div></a>
+  <a onclick="sezGo('szr-offer')" class="szr-topic"><span class="szr-topic-ic">📝</span><div class="szr-topic-n">03</div><div class="szr-topic-l">Offer Terms</div></a>
+  <a onclick="sezGo('szr-dates')" class="szr-topic"><span class="szr-topic-ic">📅</span><div class="szr-topic-n">04</div><div class="szr-topic-l">Home Buyer Escrow Timeline</div></a>
+  <a onclick="sezGo('szr-piti')" class="szr-topic"><span class="szr-topic-ic">💰</span><div class="szr-topic-n">05</div><div class="szr-topic-l">Understanding Mortgage Payments</div></a>
+  <a onclick="sezGo('szr-ck')" class="szr-topic"><span class="szr-topic-ic">✅</span><div class="szr-topic-n">06</div><div class="szr-topic-l">Buyer Escrow Check List</div></a>
+</div>
+
+<!-- ══ 1. ESCROW TERMS ══ -->
+<div class="szr-sec" id="szr-terms">
+  <div class="szr-ey">Section 1</div>
+  <h2 class="szr-ttl">Escrow Real Estate Terms</h2>
+  <p class="szr-mut" style="margin-bottom:28px!important">Familiarize yourself with these key terms before your escrow begins. <strong style="color:#344a57">Gold-highlighted cards</strong> are the most critical terms to understand.</p>
+  <div class="szr-gloss">
+    <div class="szr-gt"><div class="szr-gw">Escrow</div><div class="szr-gd">A neutral third party holding funds and documents until all conditions of the sale are met and ownership transfers.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">EMD — Earnest Money Deposit</div><div class="szr-gd">A good-faith deposit (typically 1–3%) wired to escrow within 3 business days of acceptance. Shows your commitment to purchase.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Contingency</div><div class="szr-gd">A condition that must be fulfilled for the sale to proceed. Common contingencies: inspection, appraisal, and loan.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">Contingency Removal</div><div class="szr-gd">The formal act of waiving a contingency in writing. Once removed, your deposit may be at risk if you back out for that reason.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">TDS — Transfer Disclosure Statement</div><div class="szr-gd">A mandatory seller form revealing all known material facts and defects about the property. One of the most important documents you'll receive.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">SPQ — Seller Property Questionnaire</div><div class="szr-gd">Detailed supplemental disclosure where the seller answers specific questions about the property's history, systems, permits, and neighborhood.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">Request for Repairs</div><div class="szr-gd">A written request from you after inspection asking the seller to make repairs or offer a credit — focused on health, safety, and non-functioning items.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">Seller Credit</div><div class="szr-gd">A credit from the seller applied toward your closing costs only — not your down payment or issued as cash. Typically negotiated after inspection.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">Closing Costs</div><div class="szr-gd">One-time fees paid at close — loan fees, escrow/title charges, prepaid taxes and insurance. Typically 1.5–2% of purchase price (~$15K–$20K on a $1M home).</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">HOA — Homeowners Association</div><div class="szr-gd">Organization managing shared amenities and community rules. HOA dues are an ongoing monthly cost. Condo HOAs may cover roof and structure.</div></div>
+    <div class="szr-gt szr-gt-hi"><div class="szr-badge">⭐ Key Term</div><div class="szr-gw">Home Warranty</div><div class="szr-gd">An optional service contract covering repair or replacement of major home systems and appliances for typically one year after closing. Often negotiated as a seller concession.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Preliminary Title Report</div><div class="szr-gd">Document showing the property's ownership history, existing liens, easements, and encumbrances that could affect your ownership.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Title Insurance</div><div class="szr-gd">Protects your ownership rights against future claims or defects in the property's title not discovered before closing.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Appraisal</div><div class="szr-gd">An independent valuation ordered by your lender. The appraised value must support the loan amount for financing to proceed.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Close of Escrow (COE)</div><div class="szr-gd">The final day when the deed is recorded with the county, ownership transfers to you, and you receive your keys.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Prorations</div><div class="szr-gd">Adjustments to property taxes, HOA dues, or other recurring charges split between buyer and seller based on the close date.</div></div>
+    <div class="szr-gt"><div class="szr-gw">PITI</div><div class="szr-gd">Principal, Interest, Taxes, and Insurance — the four components lenders use to calculate your total monthly mortgage payment.</div></div>
+    <div class="szr-gt"><div class="szr-gw">PMI — Private Mortgage Insurance</div><div class="szr-gd">Required when down payment is less than 20% on a conventional loan. Typically 0.3–1.5% of loan annually. Removed once you reach 20% equity.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Recording</div><div class="szr-gd">The official filing of the deed with the county recorder's office, making your ownership a matter of public record. This finalizes the sale.</div></div>
+    <div class="szr-gt"><div class="szr-gw">Notary Signing</div><div class="szr-gd">Appointment where you sign all loan and escrow documents in the presence of a notary, typically 4 days before your close date.</div></div>
+  </div>
+</div>
+
+<!-- ══ 2. KEY PEOPLE ══ -->
+<div class="szr-dark szr-sec" id="szr-people">
+  <div class="szr-ey">Section 2</div>
+  <h2 class="szr-ttl">Key People &amp; Companies</h2>
+  <div class="szr-pg">
+    <div class="szr-per"><div class="szr-pi">🧭</div><div class="szr-pr">Your Advocate</div><div class="szr-pn">Buyer's Agent</div><p class="szr-pd">Guides you step-by-step, negotiates terms, protects your interests, and keeps the transaction moving smoothly.</p></div>
+    <div class="szr-per"><div class="szr-pi">📑</div><div class="szr-pr">Deadline Tracker</div><div class="szr-pn">Transaction Coordinator</div><p class="szr-pd">Samantha Barmasse keeps the file organized and compliant, tracking every deadline on your behalf.</p><div class="szr-ptip">Pay close attention to their reminders — they keep you on schedule.</div></div>
+    <div class="szr-per"><div class="szr-pi">💳</div><div class="szr-pr">Financing</div><div class="szr-pn">Lender</div><p class="szr-pd">Approves and funds your mortgage. Manages the loan application and orders the appraisal.</p><div class="szr-ptip">Respond quickly to document requests to avoid delays.</div></div>
+    <div class="szr-per"><div class="szr-pi">📏</div><div class="szr-pr">Property Value</div><div class="szr-pn">Appraiser</div><p class="szr-pd">Independent professional hired by your lender to confirm the property value supports the loan amount.</p><div class="szr-ptip">You don't need to attend the appraisal.</div></div>
+    <div class="szr-per"><div class="szr-pi">🏦</div><div class="szr-pr">Neutral Third Party</div><div class="szr-pn">Escrow Company</div><p class="szr-pd">Holds your deposit, prepares all closing paperwork, and disburses funds once every condition is satisfied.</p><div class="szr-ptip">Always confirm wire instructions by phone — never by email alone.</div></div>
+    <div class="szr-per"><div class="szr-pi">🔐</div><div class="szr-pr">Property Protection</div><div class="szr-pn">Home Insurance</div><p class="szr-pd">Protects against fire, theft, and certain disasters. Required by your lender. You may need two separate policies.</p><div class="szr-ptip">California policies take time — shop immediately.</div></div>
+    <div class="szr-per"><div class="szr-pi">🛡</div><div class="szr-pr">Systems Coverage</div><div class="szr-pn">Home Warranty</div><p class="szr-pd">Optional contract covering major systems and appliances for the first year of ownership.</p><div class="szr-ptip">Especially valuable if appliances or systems are older.</div></div>
+    <div class="szr-per"><div class="szr-pi">🔍</div><div class="szr-pr">Home Condition</div><div class="szr-pn">Home Inspector</div><p class="szr-pd">Licensed professional who provides a full report on structure, systems, and safety.</p><div class="szr-ptip">Attend the final 30–45 min to review findings firsthand.</div></div>
+    <div class="szr-per"><div class="szr-pi">📜</div><div class="szr-pr">Ownership Clarity</div><div class="szr-pn">Title Company</div><p class="szr-pd">Clears liens, researches property history, and issues title insurance protecting your ownership rights.</p><div class="szr-ptip">Review the preliminary title report with your agent before Day 7.</div></div>
+  </div>
+  <div class="szr-call"><div class="szr-cbar"></div><div><p><strong>Important:</strong> Communicate through your buyer's agent at all times. Do not contact the listing agent directly.</p></div></div>
+</div>
+
+<!-- ══ OFFER PROCESS ══ -->
+<div class="szr-sec" id="szr-op">
+  <div class="szr-ey">Offer Process</div>
+  <h2 class="szr-ttl">How We Make an Offer</h2>
+  <p class="szr-mut" style="margin-bottom:36px!important">From deciding on a property to receiving acceptance — here is every step of the negotiation process.</p>
+
+  <div class="op-card">
+    <div class="op-num">1</div>
+    <div class="op-ey">Finding the Right Home</div>
+    <div class="op-title">We Decide on a Property</div>
+    <p class="op-desc">After touring homes together we identify the right property — one that fits your needs, goals, and budget. Once we agree it's the one, we immediately move into offer strategy.</p>
+  </div>
+  <div class="op-arrow"><div class="op-arrow-line"></div><div class="op-arrow-head"></div></div>
+
+  <div class="op-card">
+    <div class="op-num">2</div>
+    <div class="op-ey">Strategy Session</div>
+    <div class="op-title">We Discuss Offer Terms Together</div>
+    <p class="op-desc">Before writing anything, we study the competitive landscape and shape the right strategy. Are other buyers interested? The answer changes everything.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+      <div style="background:#f0f4f6;border:1px solid var(--mist);border-radius:5px;padding:14px 16px"><div style="font-family:var(--f)!important;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--sl);margin:0 0 5px!important;font-weight:normal!important">If other offers exist</div><div style="font-family:var(--f)!important;font-size:14px;color:#3d5a6b;margin:0!important;font-weight:normal!important">Strengthen price &amp; terms to be the most compelling offer</div></div>
+      <div style="background:#fffbf0;border:1px solid rgba(194,164,106,.35);border-radius:5px;padding:14px 16px"><div style="font-family:var(--f)!important;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin:0 0 5px!important;font-weight:normal!important">If no other offers</div><div style="font-family:var(--f)!important;font-size:14px;color:var(--deep);margin:0!important;font-weight:normal!important">Find creative ways to negotiate price, credits, or terms</div></div>
+    </div>
+  </div>
+  <div class="op-arrow"><div class="op-arrow-line"></div><div class="op-arrow-head"></div></div>
+
+  <div class="op-card">
+    <div class="op-num">3</div>
+    <div class="op-ey">Submitting</div>
+    <div class="op-title">We Submit the Offer</div>
+    <p class="op-desc">We write and present the purchase offer with all agreed-upon terms — purchase price, down payment, deposit amount, contingency periods, and close of escrow date.</p>
+  </div>
+  <div class="op-arrow"><div class="op-arrow-line"></div><div class="op-arrow-head"></div></div>
+
+  <div class="op-fork">
+    <div class="op-fork-label">Seller's Response — Two Possible Paths</div>
+    <p class="op-fork-sub">After reviewing your offer, the seller sends a counter. The type depends on whether there are other buyers at the table.</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div class="op-branch-stem"><div class="op-branch-stem-line"></div><div class="op-branch-arrow-head"></div></div>
+    <div class="op-branch-stem"><div class="op-branch-stem-line"></div><div class="op-branch-arrow-head"></div></div>
+  </div>
+
+  <div class="op-branch">
+    <div>
+      <p class="op-bpill op-bpill-a">Path A &nbsp;· Single Offer</p>
+      <div class="op-card op-card-a"><div class="op-num op-num-a">4A</div><div class="op-ey">One-on-One Negotiation</div><div class="op-title">Seller Counter Offer (SCO)</div><p class="op-desc">The seller sends a formal counter adjusting price, terms, or both. You are the only buyer being negotiated with.</p></div>
+      <div class="op-arrow" style="padding:6px 0"><div class="op-arrow-line"></div><div class="op-arrow-head"></div></div>
+      <div class="op-card op-card-a"><div class="op-num op-num-a">5A</div><div class="op-ey">Your Response</div><div class="op-title">You Accept or Counter Back</div><p class="op-desc">We review the seller's counter together. You either accept their terms or we write another counter to keep negotiating.</p></div>
+    </div>
+    <div>
+      <p class="op-bpill op-bpill-b">Path B &nbsp;· Multiple Offers</p>
+      <div class="op-card op-card-b"><div class="op-num op-num-b">4B</div><div class="op-ey">Competitive Situation</div><div class="op-title">Seller Multiple Counter Offer (SMCO)</div><p class="op-desc">The seller sends the same counter to multiple buyers at once, inviting each to respond with their best terms.</p></div>
+      <div class="op-arrow" style="padding:6px 0"><div class="op-arrow-line"></div><div class="op-arrow-head"></div></div>
+      <div class="op-card op-card-b"><div class="op-num op-num-b">5B</div><div class="op-ey">Compete for the Home</div><div class="op-title">We Submit Our Best Counter</div><p class="op-desc">We respond with our strongest possible offer — price, terms, and conditions — knowing competing buyers are doing the same.</p></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:0">
+    <div class="op-merge-col"><div class="op-merge-line"></div></div>
+    <div class="op-merge-col"><div class="op-merge-line"></div></div>
+  </div>
+  <div class="op-arrow"><div class="op-arrow-line"></div><div class="op-arrow-head"></div></div>
+
+  <div class="op-card">
+    <div class="op-num">6</div>
+    <div class="op-ey">Agreement</div>
+    <div class="op-title">Terms Are Agreed Upon by Both Sides</div>
+    <p class="op-desc">Whether through a one-on-one or competitive situation, buyer and seller reach agreement on price and all terms. Both parties sign the final counter offer — making it a binding contract.</p>
+  </div>
+  <div class="op-arrow"><div class="op-arrow-line"></div><div class="op-arrow-head"></div></div>
+
+  <div class="op-final">
+    <div class="op-ey">Congratulations!</div>
+    <div class="op-title">We Got Acceptance — Escrow Begins Now</div>
+    <div class="op-final-rule"></div>
+    <p class="op-desc">The contract is fully executed the moment the final counter offer is signed by all parties. That date is the official start of escrow. Everything on your timeline counts forward from this day.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px">
+      <div class="op-daybadge"><b>Day Zero (Day 0)</b><span>The date the counter is fully signed by everyone</span></div>
+      <div class="op-daybadge"><b>Day 1</b><span>The very next day — escrow clock is running</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 3. OFFER TERMS ══ -->
+<div class="szr-sec" id="szr-offer">
+  <div class="szr-ey">Section 3</div>
+  <h2 class="szr-ttl">Offer Terms</h2>
+  <p class="szr-mut" style="margin-bottom:24px!important">Enter your offer details below then click <strong style="color:#344a57">Generate Timeline</strong> to auto-calculate all key escrow dates, adjusted for weekends and federal holidays.</p>
+  <div class="szr-form">
+    <div class="szr-fg">
+      <div class="szr-fld"><label>Acceptance Date (Day 0)</label><input type="date" id="szr-d0"></div>
+      <div class="szr-fld"><label>Purchase Price ($)</label><input type="text" id="szr-pp" placeholder="1,000,000"></div>
+      <div class="szr-fld"><label>Down Payment ($)</label><input type="text" id="szr-dp" placeholder="200,000"></div>
+      <div class="szr-fld"><label>Earnest Money Deposit ($)</label><input type="text" id="szr-em" placeholder="30,000"></div>
+      <div class="szr-fld"><label>Inspection Contingency (days)</label><input type="number" id="szr-id" value="7" min="1" max="30"></div>
+      <div class="szr-fld"><label>Appraisal Contingency (days)</label><input type="number" id="szr-ad" value="17" min="1" max="45"></div>
+      <div class="szr-fld"><label>Loan Contingency (days)</label><input type="number" id="szr-ld" value="17" min="1" max="45"></div>
+      <div class="szr-fld"><label>Escrow Length (days)</label><input type="number" id="szr-el" value="30" min="7" max="90"></div>
+    </div>
+    <button class="szr-btn no-print" onclick="sezGen()">Generate Timeline</button>
+    <button class="szr-btn szr-btn-o no-print" onclick="sezReset()">Reset Example</button>
+    <p class="szr-fnote">Contingency dates landing on weekends or US federal holidays are moved to the next business day automatically.</p>
+  </div>
+  <div class="szr-sum" id="szr-sumbox">
+    <div class="szr-sumt">Generated Offer Summary</div>
+    <div class="szr-sumg" id="szr-sumg"></div>
+  </div>
+</div>
+
+<!-- ══ 4. TIMELINE ══ -->
+<div class="szr-sec" id="szr-dates">
+  <div class="szr-ey">Section 4</div>
+  <h2 class="szr-ttl">Home Buyer Escrow Timeline <em style="font-size:.55em;color:#8fa1ad;font-weight:normal">Key Dates at a Glance</em></h2>
+  <p class="szr-mut" style="margin-bottom:28px!important">Check each step as you complete it — the row turns green when done. Enter your dates in Offer Terms above and click Generate Timeline to populate your real dates.</p>
+  <div class="szr-tl" id="szr-tl"></div>
+</div>
+
+<!-- ══ 4b. CALENDAR ══ -->
+<div class="szr-sec" id="szr-cal">
+  <div class="szr-ey">Visual Overview</div>
+  <h2 class="szr-ttl">Escrow Calendar</h2>
+  <p class="szr-mut" style="margin-bottom:18px!important">Key dates are highlighted in yellow. Check the box on each date as it passes — it turns green.</p>
+  <div id="szr-calout"></div>
+</div>
+
+<!-- ══ 5. PITI ══ -->
+<div class="szr-sec" id="szr-piti">
+  <div class="szr-ey">Section 5</div>
+  <h2 class="szr-ttl">Understanding Your Mortgage Payment</h2>
+  <p class="szr-mut" style="margin-bottom:28px!important">Your true monthly housing cost is more than just the mortgage. Lenders use PITI + HOA to calculate your full payment obligation on a $1M home at 6.5%.</p>
+  <div class="szr-piti">
+    <div class="szr-pc"><span class="szr-pl">P</span><div class="szr-pdiv"></div><span class="szr-pn">Principal</span><span class="szr-pa">~$1,083/mo</span><span class="szr-pnt">Reduces your loan balance</span></div>
+    <div class="szr-pc"><span class="szr-pl">I</span><div class="szr-pdiv"></div><span class="szr-pn">Interest</span><span class="szr-pa">~$4,333/mo</span><span class="szr-pnt">Cost of borrowing at 6.5%</span></div>
+    <div class="szr-pc"><span class="szr-pl">T</span><div class="szr-pdiv"></div><span class="szr-pn">Taxes</span><span class="szr-pa">~$945–$1,000/mo</span><span class="szr-pnt">~1.15%/yr San Diego County</span></div>
+    <div class="szr-pc"><span class="szr-pl">I</span><div class="szr-pdiv"></div><span class="szr-pn">Insurance</span><span class="szr-pa">~$100–$300+/mo</span><span class="szr-pnt">Varies by home &amp; location</span></div>
+  </div>
+  <div class="szr-c3">
+    <div class="szr-card"><div class="szr-cl">HOA Fees</div><div class="szr-ct">$50–$500+/month</div><p>Covers landscaping, amenities, and maintenance. Condo HOAs may also cover structure, roof, and common areas. Watch for special assessments.</p></div>
+    <div class="szr-card"><div class="szr-cl">PMI (if &lt;20% down)</div><div class="szr-ct">0.3–1.5% annually</div><p>On a $900K loan: ~$225–$1,125/month. Automatically removed once you reach 20% equity in the home.</p></div>
+    <div class="szr-card"><div class="szr-cl">Closing Costs</div><div class="szr-ct">~1.5–2% of sale price</div><p>On a $1M home: roughly $15,000–$20,000 at close. Includes loan fees, escrow/title, prepaid taxes and insurance.</p></div>
+  </div>
+  <div class="szr-tip">
+    <div class="szr-tipl">Smart Payment Strategies</div>
+    <ol>
+      <li><strong>Biweekly Payments:</strong> Make half your mortgage payment every two weeks. This produces 13 full payments per year instead of 12 — cutting years off your loan and saving substantially on total interest.</li>
+      <li><strong>One Extra Payment Per Year:</strong> Apply one additional full payment annually. This simple strategy significantly speeds up payoff and saves thousands over the life of the loan.</li>
+    </ol>
+  </div>
+  <div style="margin-top:26px"><p style="margin-bottom:10px!important">Run different loan scenarios and compare payment options for your specific situation:</p><a href="https://www.carmelvalley.com/mortgage-scenario-analysis/" class="szr-mlink" target="_blank" rel="noopener">Mortgage Scenario Analysis</a></div>
+</div>
+
+<!-- ══ 6. CHECKLIST ══ -->
+<div class="szr-sec" id="szr-ck">
+  <div class="szr-ey">Section 6</div>
+  <h2 class="szr-ttl">Buyer Escrow Check List</h2>
+  <p class="szr-mut" style="margin-bottom:8px!important">Check each item as you complete it — rows turn green when done. Use the print button to save a PDF copy.</p>
+
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph0">📅 Day 0 — Acceptance</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review and countersign the purchase agreement with your agent</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Confirm escrow company name, officer name, and contact information</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Note all contingency deadlines in your calendar</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Notify your lender of the accepted offer immediately</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph1">💸 Business Day 3 — Deposit (EMD Due)</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt"><strong>Call</strong> the escrow officer to verbally confirm wiring instructions before sending any funds</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Wire Earnest Money Deposit (EMD) to escrow — ideally before 12 pm for same-day receipt</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Text your agent immediately before wiring and again immediately after</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Confirm wire receipt with escrow officer 1–2 hours after sending</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph2">🔍 Days 1–7 — Inspection Phase</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Schedule home inspection (Day 1–2)</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Attend home inspection — arrive for the final 30–45 minutes to walk through with the inspector</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review full inspection report with your agent</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review seller disclosures via DocuSign: TDS (Transfer Disclosure Statement)</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review seller disclosures via DocuSign: SPQ (Seller Property Questionnaire)</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review HOA documents and CC&amp;Rs (if applicable)</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review preliminary title report with your agent</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Discuss and submit Request for Repairs — health, safety, non-functioning items</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Sign Inspection / Disclosures / Title Contingency Removal by Day 7 deadline</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph3">💳 Days 1–17 — Loan &amp; Appraisal Phase</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Begin shopping for Homeowner's Insurance immediately (Day 1)</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Shop for CalFair fire insurance if property is in a high-risk fire zone</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Respond promptly to ALL lender document requests — every day counts</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Appraisal completed by lender's appraiser (you don't need to attend)</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review appraisal results with lender — value must support loan amount</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Sign Loan &amp; Appraisal Contingency Removal by Day 17 deadline</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph4">📋 Days 17–26 — Final Preparation</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Finalize and bind Homeowner's Insurance policy</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Provide insurance binder/certificate to your lender</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review final loan documents and confirm all terms with lender</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Confirm total closing costs with lender and escrow officer</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Schedule final walkthrough of property (Day 29)</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph5">✍ Day 26 — Notary Signing &amp; Closing Funds</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Complete notary signing appointment — sign all loan and escrow documents</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Sign Loan &amp; Appraisal Contingency Removal by Day 17 deadline</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph4">📋 Days 17–26 — Final Preparation</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Finalize and bind Homeowner's Insurance policy</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Provide insurance binder/certificate to your lender</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Review final loan documents and confirm all terms with lender</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Confirm total closing costs with lender and escrow officer</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Schedule final walkthrough of property (Day 29)</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph5">✍ Day 26 — Notary Signing &amp; Closing Funds</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Complete notary signing appointment — sign all loan and escrow documents</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt"><strong>Call</strong> escrow officer to verbally confirm closing wire instructions</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Wire remaining down payment + closing costs to escrow — before 12 pm</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Confirm closing funds wire receipt with escrow officer</span></label>
+  </div>
+  <div style="margin-bottom:32px">
+    <div class="szr-phd" id="szrph6">🏠 Day 30 — Close of Escrow</div>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Complete final walkthrough — verify property is in agreed condition</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Receive confirmation that deed has been recorded with the county</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Receive your keys from your agent 🔑</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt"><strong>Save a copy of your Home Warranty</strong> — valid for 1 year from close of escrow. Store with closing documents and note the expiration date and claims phone number.</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Update mailing address with USPS, banks, employer, and DMV</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Transfer utilities to your name (water, gas, electric, internet)</span></label>
+    <label class="szr-ck-wrap" onclick="sezCkL(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv szr-cbv-sm"></span><span class="szr-ck-txt">Celebrate — you are a homeowner! 🎉</span></label>
+  </div>
+</div>
+
+<!-- ══ 7. FEES ══ -->
+<div class="szr-sec" id="szr-fees">
+  <div class="szr-ey">Section 7</div>
+  <h2 class="szr-ttl">Sample Escrow Fees</h2>
+  <p class="szr-mut" style="margin-bottom:24px!important">Actual Borrower's Estimated Settlement Statement for a $1,212,000 purchase — a real-world reference for what closing costs look like in practice.</p>
+  <table class="szr-fees">
+    <thead><tr><th>Description</th><th>Debit</th></tr></thead>
+    <tbody>
+      <tr class="fg"><td colspan="2">Financial Consideration</td></tr>
+      <tr><td>Sale Price of Property</td><td>$1,212,000.00</td></tr>
+      <tr class="fg"><td colspan="2">Prorations / Adjustments</td></tr>
+      <tr><td>County Taxes (prorated)</td><td>$4,364.95</td></tr>
+      <tr class="fg"><td colspan="2">Commissions</td></tr>
+      <tr><td>Compensation to Buyer's Broker — Keller Williams Realty</td><td>$30,300.00</td></tr>
+      <tr class="fg"><td colspan="2">Loan Charges</td></tr>
+      <tr><td>Processing Fee</td><td>$1,050.00</td></tr>
+      <tr><td>Credit Report</td><td>$230.00</td></tr>
+      <tr><td>Flood Certification</td><td>$9.00</td></tr>
+      <tr><td>Tax Service</td><td>$150.00</td></tr>
+      <tr><td>Prepaid Interest ($173.29/day)</td><td>$5,198.70</td></tr>
+      <tr><td>Homeowner's Insurance — 3 months @ $300/mo</td><td>$900.00</td></tr>
+      <tr><td>Mortgage Insurance — 1 month @ $182.08/mo</td><td>$182.08</td></tr>
+      <tr><td>Property Taxes — 3 months @ $1,312/mo</td><td>$3,936.00</td></tr>
+      <tr class="fg"><td colspan="2">Other Loan Charges</td></tr>
+      <tr><td>Notary</td><td>$250.00</td></tr>
+      <tr class="fg"><td colspan="2">Escrow Charges</td></tr>
+      <tr><td>Document Prep Fee</td><td>$100.00</td></tr>
+      <tr><td>Lender E-Doc / Loan Tie-In</td><td>$275.00</td></tr>
+      <tr><td>Servicer Fee</td><td>$300.00</td></tr>
+      <tr><td>Settlement / Closing Fee</td><td>$3,496.00</td></tr>
+      <tr class="fg"><td colspan="2">Title Charges</td></tr>
+      <tr><td>Endorsement Fee</td><td>$100.00</td></tr>
+      <tr><td>Lender's Title Insurance</td><td>$1,553.00</td></tr>
+      <tr><td>Messenger / Sub Escrow / Wire Fees</td><td>$180.00</td></tr>
+      <tr class="fg"><td colspan="2">Recording Charges</td></tr>
+      <tr><td>Recording Fees (Mortgage + Deed + Service)</td><td>$275.00</td></tr>
+      <tr class="fg"><td colspan="2">Miscellaneous</td></tr>
+      <tr><td>Homeowner's Insurance Premium</td><td>$3,600.00</td></tr>
+      <tr class="ft"><td>Balance Due from Borrower</td><td>$52,249.73</td></tr>
+    </tbody>
+  </table>
+  <div class="szr-call" style="margin-top:18px"><div class="szr-cbar"></div><div><p>Closing costs typically run <strong>1.5–2%</strong> of the sale price — roughly $15,000–$20,000 on a $1M home. Your actual figures vary based on loan terms, lender, and title/escrow companies used.</p></div></div>
+  <div style="margin-top:44px;padding-top:24px;border-top:1px solid #dadde1"><p style="font-size:12px!important;color:#8fa1ad;text-align:center;margin:0!important">Sez Sezer &nbsp;&middot;&nbsp; Keller Williams Realty &nbsp;&middot;&nbsp; Carmel Valley &middot; Del Mar &middot; Rancho Santa Fe &nbsp;&middot;&nbsp; carmelvalley.com &nbsp;&middot;&nbsp; DRE #01988197</p></div>
+</div>
+
+</div><!-- /#szr-bg -->
+
+<script>
+(function(){
+'use strict';
+var H=new Set(['2025-01-01','2025-01-20','2025-02-17','2025-05-26','2025-06-19','2025-07-04','2025-09-01','2025-10-13','2025-11-11','2025-11-27','2025-12-25','2026-01-01','2026-01-19','2026-02-16','2026-05-25','2026-06-19','2026-07-03','2026-09-07','2026-10-12','2026-11-11','2026-11-26','2026-12-25','2027-01-01','2027-01-18','2027-02-15','2027-05-31','2027-06-18','2027-07-05','2027-09-06','2027-10-11','2027-11-11','2027-11-25','2027-12-24']);
+var MO=['January','February','March','April','May','June','July','August','September','October','November','December'];
+var MS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var WD=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function pad(n){return n<10?'0'+n:''+n;}
+function dKey(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function isWH(d){return d.getDay()===0||d.getDay()===6||H.has(dKey(d));}
+function addBD(d,n){var r=new Date(d.getTime());var c=0;while(c<n){r.setDate(r.getDate()+1);if(!isWH(r))c++;}return r;}
+function nextBD(d){var r=new Date(d.getTime());while(isWH(r))r.setDate(r.getDate()+1);return r;}
+function addCal(d,n){var r=new Date(d.getFullYear(),d.getMonth(),d.getDate()+n,12,0,0);return nextBD(r);}
+function diff(a,b){return Math.round((b.getTime()-a.getTime())/86400000);}
+function fmtL(d){return WD[d.getDay()]+', '+MO[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
+function fmtS(d){return MS[d.getMonth()]+' '+d.getDate();}
+function fmtMoney(n){return n>0?'$'+Math.round(n).toLocaleString('en-US'):'\u2014';}
+function parseAmt(s){return parseFloat((s||'').replace(/[^0-9.]/g,''))||0;}
+function g(id){return document.getElementById(id);}
+function setTodayDate(){var today=new Date();var val=today.getFullYear()+'-'+pad(today.getMonth()+1)+'-'+pad(today.getDate());var inp=g('szr-d0');if(inp)inp.value=val;}
+window.sezGo=function(id){var el=g(id);if(!el)return;var rect=el.getBoundingClientRect();var scrollTop=window.pageYOffset||document.documentElement.scrollTop||0;var target=rect.top+scrollTop-80;try{window.scrollTo({top:Math.max(0,target),behavior:'smooth'});}catch(e){window.scrollTo(0,Math.max(0,target));}};
+/* print handled globally above */
+function calc(){var sv=g('szr-d0').value;if(!sv||sv.length<10)return null;var p=sv.split('-');if(p.length!==3)return null;var yr=+p[0],mo=+p[1]-1,dy=+p[2];if(isNaN(yr)||isNaN(mo)||isNaN(dy))return null;var start=new Date(yr,mo,dy,12,0,0);if(isNaN(start.getTime()))return null;var pp=parseAmt(g('szr-pp').value);var dp=parseAmt(g('szr-dp').value);var em=parseAmt(g('szr-em').value);var id=Math.max(1,parseInt(g('szr-id').value)||7);var ad=Math.max(1,parseInt(g('szr-ad').value)||17);var ld=Math.max(1,parseInt(g('szr-ld').value)||17);var el=Math.max(7,parseInt(g('szr-el').value)||30);var emd=addBD(start,3);var insp=addCal(start,id);var appr=addCal(start,ad);var loan=addCal(start,ld);var coeRaw=new Date(yr,mo,dy+el,12,0,0);var coe=nextBD(coeRaw);var notary=nextBD(new Date(coe.getFullYear(),coe.getMonth(),coe.getDate()-4,12,0,0));var closingCosts=pp*0.02;var remainingDown=dp-em;var totalWire=closingCosts+remainingDown;return{start,pp,dp,em,id,ad,ld,el,emd,insp,appr,loan,notary,coe,closingCosts,remainingDown,totalWire};}
+function mkRow(isKey,uid,dayLabel,dateStr,evHtml){return '<div class="szr-tr-wrap" id="'+uid+'"><div class="szr-tr-dot'+(isKey?' szr-tr-dot-k':'')+'"></div><div class="szr-tr-card" onclick="sezTlClick(this)"><input type="checkbox" class="szr-cbr"><span class="szr-cbv"></span><div class="szr-tr-body">'+(dayLabel?'<div class="szr-tday">'+dayLabel+'</div>':'')+' '+(dateStr?'<div class="szr-tdate">'+dateStr+'</div>':'')+'<div class="szr-tev">'+evHtml+'</div></div></div></div>';}
+function renderTL(d){var html='';html+=mkRow(true,'_tl0','Day 0',fmtL(d.start),'<b>Acceptance Delivered</b> — Escrow clock begins');html+=mkRow(false,'_tl1','Day 1','','Escrow Opened &amp; Home Inspection Scheduled');html+=mkRow(true,'_tl2','Business Day 3',fmtL(d.emd),'<b>Deposit Due — '+fmtMoney(d.em)+' wire to escrow</b>');html+=mkRow(false,'_tl3','Days 3–'+(d.id-1),'','Inspection Completed &amp; Results Reviewed');html+=mkRow(true,'_tl4','Day '+d.id,fmtL(d.insp),'<b>Contingency Removal</b> — Inspection / Disclosures / Title');html+=mkRow(true,'_tl5','Day '+d.ld,fmtL(d.loan),'<b>Loan &amp; Appraisal Contingency Removal</b>');html+=mkRow(false,'_tl6','Day '+diff(d.start,d.notary),fmtL(d.notary),'Notary Signing — Wire Closing Funds <b style="color:#a0692a">('+fmtMoney(d.totalWire)+')</b>');html+=mkRow(true,'_tl7','Day '+d.el,fmtL(d.coe),'<b>Close of Escrow — Receive Your Keys 🔑</b>');g('szr-tl').innerHTML=html;var ph=['\U0001f4c5 Day 0 — '+fmtS(d.start)+' Acceptance','\U0001f4b8 Business Day 3 — '+fmtS(d.emd)+' Deposit Due','\U0001f50d Days 1–'+d.id+' — Inspection Phase (through '+fmtS(d.insp)+')','\U0001f4b3 Days 1–'+d.ld+' — Loan &amp; Appraisal Phase (through '+fmtS(d.loan)+')','\U0001f4cb Days '+d.id+'–'+diff(d.start,d.notary)+' — Final Preparation','\u270d Day '+diff(d.start,d.notary)+' — '+fmtS(d.notary)+' Notary Signing &amp; Closing Funds','\U0001f3e0 Day '+d.el+' — '+fmtS(d.coe)+' Close of Escrow'];for(var i=0;i<7;i++){var el=g('szrph'+i);if(el)el.innerHTML=ph[i];}}
+function renderCal(d){var kd={};function addKD(dt,tag,desc,cls){kd[dKey(dt)]={tag:tag,desc:desc,cls:cls};}addKD(d.start,'Day 0','Acceptance','tl');addKD(d.emd,'Bus. Day 3','Deposit '+fmtMoney(d.em),'ta');addKD(d.insp,'Day '+d.id,'Contingency: Inspection','tl');if(dKey(d.appr)!==dKey(d.loan))addKD(d.appr,'Day '+d.ad,'Appraisal Contingency','ts');addKD(d.loan,'Day '+d.ld,'Loan &amp; Appraisal','tl');addKD(d.notary,'Day '+diff(d.start,d.notary),'Notary &amp; Wire '+fmtMoney(d.totalWire),'ta');addKD(d.coe,'Day '+d.el,'Close of Escrow 🔑','tg');var months=[];var cur=new Date(d.start.getFullYear(),d.start.getMonth(),1);var end=new Date(d.coe.getFullYear(),d.coe.getMonth(),1);while(cur<=end){months.push(new Date(cur));cur.setMonth(cur.getMonth()+1);}if(months.length>3)months=months.slice(0,3);var html='';months.forEach(function(mo){var yr=mo.getFullYear(),mn=mo.getMonth();html+='<div class="szr-calt">'+MO[mn].toUpperCase()+'&nbsp;&nbsp;'+yr+'</div><div class="szr-calw"><table class="szr-cal"><thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody>';var first=new Date(yr,mn,1).getDay(),dim=new Date(yr,mn+1,0).getDate(),ci=0,day=1;while(day<=dim){html+='<tr>';for(var col=0;col<7;col++){if((ci===0&&col<first)||day>dim){html+='<td></td>';}else{var td=new Date(yr,mn,day,12,0,0),k=dKey(td),isKey=!!kd[k],cid='szc'+k.replace(/-/g,'');html+='<td'+(isKey?' class="szr-kd"':'')+ ' id="'+cid+'">';html+='<div class="szr-cnum">'+day+'</div>';if(isKey){html+='<div class="szr-ctag '+kd[k].cls+'">'+kd[k].tag+'</div><div class="szr-cdesc">'+kd[k].desc+'</div>';html+='<label class="szr-cal-cbl" onclick="sezCalCk(this,\''+cid+'\')"><input type="checkbox" class="szr-cbr"><span class="szr-cbv" style="width:14px;height:14px;min-width:14px;min-height:14px;border-width:1.5px"></span></label>';}html+='</td>';day++;}ci++;}html+='</tr>';}html+='</tbody></table></div>';});g('szr-calout').innerHTML=html;}
+function renderSum(d){var items=[{l:'Acceptance Date',v:fmtL(d.start),hi:false},{l:'Purchase Price',v:fmtMoney(d.pp),hi:false},{l:'Down Payment',v:fmtMoney(d.dp),hi:false},{l:'Loan Amount',v:fmtMoney(d.pp-d.dp),hi:false},{l:'EMD Due',v:fmtS(d.emd)+' — '+fmtMoney(d.em),hi:false},{l:'Inspection Contingency',v:fmtS(d.insp)+' (Day '+d.id+')',hi:false},{l:'Loan &amp; Appraisal',v:fmtS(d.loan)+' (Day '+d.ld+')',hi:false},{l:'Notary Signing',v:fmtS(d.notary)+' (Day '+diff(d.start,d.notary)+')',hi:false},{l:'Close of Escrow',v:fmtS(d.coe)+' (Day '+d.el+')',hi:false},{l:'Remaining Down Payment',v:fmtMoney(d.remainingDown),hi:false},{l:'Est. Closing Costs (2%)',v:fmtMoney(d.closingCosts),hi:false},{l:'Total Wire — Closing Funds',v:fmtMoney(d.totalWire),hi:true}];g('szr-sumg').innerHTML=items.map(function(i){return '<div class="'+(i.hi?'szr-sum-hi':'')+'">'+'<div class="szr-suml">'+i.l+'</div><div class="szr-sumv">'+i.v+'</div></div>';}).join('');g('szr-sumbox').classList.add('on');}
+window.sezGen=function(noScroll){var d=calc();if(!d){alert('Please enter a valid acceptance date.');return;}renderTL(d);renderCal(d);renderSum(d);if(!noScroll)sezGo('szr-dates');};
+window.sezReset=function(){setTodayDate();g('szr-pp').value='1,000,000';g('szr-dp').value='200,000';g('szr-em').value='30,000';g('szr-id').value='7';g('szr-ad').value='17';g('szr-ld').value='17';g('szr-el').value='30';g('szr-sumbox').classList.remove('on');sezGen(true);};
+window.sezTlClick=function(card){var cb=card.querySelector('.szr-cbr'),vis=card.querySelector('.szr-cbv');if(!cb)return;cb.checked=!cb.checked;card.classList.toggle('szr-done',cb.checked);if(vis)vis.classList.toggle('chk',cb.checked);};
+window.sezCalCk=function(lbl,tdId){var cb=lbl.querySelector('.szr-cbr'),vis=lbl.querySelector('.szr-cbv');if(!cb)return;setTimeout(function(){var td=g(tdId);if(td)td.classList.toggle('szr-done',cb.checked);if(vis)vis.classList.toggle('chk',cb.checked);},0);};
+window.sezCkL=function(lbl){var cb=lbl.querySelector('.szr-cbr'),vis=lbl.querySelector('.szr-cbv');if(!cb)return;cb.checked=!cb.checked;lbl.classList.toggle('szr-done',cb.checked);if(vis)vis.classList.toggle('chk',cb.checked);return false;};
+try{var obs=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting)e.target.classList.add('szr-vis');});},{threshold:.06});document.querySelectorAll('#szr-bg .szr-sec').forEach(function(s){obs.observe(s);});}catch(e){}
+try{var nls=document.querySelectorAll('#szr-bg .szr-nav a');var sids=['szr-terms','szr-people','szr-op','szr-offer','szr-dates','szr-cal','szr-piti','szr-ck','szr-fees'];var nio=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){nls.forEach(function(a){a.classList.remove('on');});var idx=sids.indexOf(e.target.id);if(idx>=0&&nls[idx])nls[idx].classList.add('on');}});},{rootMargin:'-20% 0px -70% 0px'});sids.forEach(function(id){var el=g(id);if(el)nio.observe(el);});}catch(e){}
+setTodayDate();
+sezGen(true);
+})();
+</script>
+</body>
+</html>
