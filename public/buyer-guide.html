@@ -281,8 +281,6 @@
   /* ── Hide screen-only UI elements ── */
   #szr-print-fab,
   #szr-bg .szr-nav,
-  #szr-bg .szr-hero,
-  #szr-bg .szr-topics,
   #szr-bg .szr-btn,
   #szr-bg .szr-btn-o,
   #szr-bg .szr-mlink,
@@ -291,6 +289,10 @@
     display: none !important;
     visibility: hidden !important;
   }
+  /* Show hero and topic squares in print */
+  #szr-bg .szr-hero { display: block !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  #szr-bg .szr-topics { display: grid !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  #szr-bg .szr-topic { display: flex !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
   /* ── Container: full width, no padding ── */
   #szr-bg {
@@ -338,6 +340,7 @@
   #szr-bg .szr-form,
   #szr-bg .szr-calw,
   #szr-bg .szr-fees,
+  #szr-bg #szr-fees,
   #szr-bg .szr-piti {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -465,6 +468,12 @@
 
 <!-- Global print helpers — outside IIFE so onclick can reach them -->
 <script>
+function sezFmtMoney(input) {
+  var raw = input.value.replace(/[^0-9]/g, '');
+  if (raw === '') return;
+  var num = parseInt(raw, 10);
+  if (!isNaN(num)) input.value = num.toLocaleString('en-US');
+}
 function szrForceVisible() {
   document.querySelectorAll('#szr-bg .szr-sec').forEach(function(s) {
     s.style.opacity = '1';
@@ -705,9 +714,9 @@ document.getElementById('szr-print-fab').addEventListener('mouseleave', function
   <div class="szr-form">
     <div class="szr-fg">
       <div class="szr-fld"><label>Acceptance Date (Day 0)</label><input type="date" id="szr-d0"></div>
-      <div class="szr-fld"><label>Purchase Price ($)</label><input type="text" id="szr-pp" placeholder="1,000,000"></div>
-      <div class="szr-fld"><label>Down Payment ($)</label><input type="text" id="szr-dp" placeholder="200,000"></div>
-      <div class="szr-fld"><label>Earnest Money Deposit ($)</label><input type="text" id="szr-em" placeholder="30,000"></div>
+      <div class="szr-fld"><label>Purchase Price ($)</label><input type="text" id="szr-pp" placeholder="1,000,000" oninput="sezFmtMoney(this)" onblur="sezFmtMoney(this)"></div>
+      <div class="szr-fld"><label>Down Payment ($)</label><input type="text" id="szr-dp" placeholder="200,000" oninput="sezFmtMoney(this)" onblur="sezFmtMoney(this)"></div>
+      <div class="szr-fld"><label>Earnest Money Deposit ($)</label><input type="text" id="szr-em" placeholder="30,000" oninput="sezFmtMoney(this)" onblur="sezFmtMoney(this)"></div>
       <div class="szr-fld"><label>Inspection Contingency (days)</label><input type="number" id="szr-id" value="7" min="1" max="30"></div>
       <div class="szr-fld"><label>Appraisal Contingency (days)</label><input type="number" id="szr-ad" value="17" min="1" max="45"></div>
       <div class="szr-fld"><label>Loan Contingency (days)</label><input type="number" id="szr-ld" value="17" min="1" max="45"></div>
@@ -920,7 +929,7 @@ function mkRow(isKey,uid,dayLabel,dateStr,evHtml){return '<div class="szr-tr-wra
 function renderTL(d){var html='';html+=mkRow(true,'_tl0','Day 0',fmtL(d.start),'<b>Acceptance Delivered</b> — Escrow clock begins');html+=mkRow(false,'_tl1','Day 1','','Escrow Opened &amp; Home Inspection Scheduled');html+=mkRow(true,'_tl2','Business Day 3',fmtL(d.emd),'<b>Deposit Due — '+fmtMoney(d.em)+' wire to escrow</b>');html+=mkRow(false,'_tl3','Days 3–'+(d.id-1),'','Inspection Completed &amp; Results Reviewed');html+=mkRow(true,'_tl4','Day '+d.id,fmtL(d.insp),'<b>Contingency Removal</b> — Inspection / Disclosures / Title');html+=mkRow(true,'_tl5','Day '+d.ld,fmtL(d.loan),'<b>Loan &amp; Appraisal Contingency Removal</b>');html+=mkRow(false,'_tl6','Day '+diff(d.start,d.notary),fmtL(d.notary),'Notary Signing — Wire Closing Funds <b style="color:#a0692a">('+fmtMoney(d.totalWire)+')</b>');html+=mkRow(true,'_tl7','Day '+d.el,fmtL(d.coe),'<b>Close of Escrow — Receive Your Keys 🔑</b>');g('szr-tl').innerHTML=html;var ph=['\U0001f4c5 Day 0 — '+fmtS(d.start)+' Acceptance','\U0001f4b8 Business Day 3 — '+fmtS(d.emd)+' Deposit Due','\U0001f50d Days 1–'+d.id+' — Inspection Phase (through '+fmtS(d.insp)+')','\U0001f4b3 Days 1–'+d.ld+' — Loan &amp; Appraisal Phase (through '+fmtS(d.loan)+')','\U0001f4cb Days '+d.id+'–'+diff(d.start,d.notary)+' — Final Preparation','\u270d Day '+diff(d.start,d.notary)+' — '+fmtS(d.notary)+' Notary Signing &amp; Closing Funds','\U0001f3e0 Day '+d.el+' — '+fmtS(d.coe)+' Close of Escrow'];for(var i=0;i<7;i++){var el=g('szrph'+i);if(el)el.innerHTML=ph[i];}}
 function renderCal(d){var kd={};function addKD(dt,tag,desc,cls){kd[dKey(dt)]={tag:tag,desc:desc,cls:cls};}addKD(d.start,'Day 0','Acceptance','tl');addKD(d.emd,'Bus. Day 3','Deposit '+fmtMoney(d.em),'ta');addKD(d.insp,'Day '+d.id,'Contingency: Inspection','tl');if(dKey(d.appr)!==dKey(d.loan))addKD(d.appr,'Day '+d.ad,'Appraisal Contingency','ts');addKD(d.loan,'Day '+d.ld,'Loan &amp; Appraisal','tl');addKD(d.notary,'Day '+diff(d.start,d.notary),'Notary &amp; Wire '+fmtMoney(d.totalWire),'ta');addKD(d.coe,'Day '+d.el,'Close of Escrow 🔑','tg');var months=[];var cur=new Date(d.start.getFullYear(),d.start.getMonth(),1);var end=new Date(d.coe.getFullYear(),d.coe.getMonth(),1);while(cur<=end){months.push(new Date(cur));cur.setMonth(cur.getMonth()+1);}if(months.length>3)months=months.slice(0,3);var html='';months.forEach(function(mo){var yr=mo.getFullYear(),mn=mo.getMonth();html+='<div class="szr-calt">'+MO[mn].toUpperCase()+'&nbsp;&nbsp;'+yr+'</div><div class="szr-calw"><table class="szr-cal"><thead><tr><th>Sun</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th></tr></thead><tbody>';var first=new Date(yr,mn,1).getDay(),dim=new Date(yr,mn+1,0).getDate(),ci=0,day=1;while(day<=dim){html+='<tr>';for(var col=0;col<7;col++){if((ci===0&&col<first)||day>dim){html+='<td></td>';}else{var td=new Date(yr,mn,day,12,0,0),k=dKey(td),isKey=!!kd[k],cid='szc'+k.replace(/-/g,'');html+='<td'+(isKey?' class="szr-kd"':'')+ ' id="'+cid+'">';html+='<div class="szr-cnum">'+day+'</div>';if(isKey){html+='<div class="szr-ctag '+kd[k].cls+'">'+kd[k].tag+'</div><div class="szr-cdesc">'+kd[k].desc+'</div>';html+='<label class="szr-cal-cbl" onclick="sezCalCk(this,\''+cid+'\')"><input type="checkbox" class="szr-cbr"><span class="szr-cbv" style="width:14px;height:14px;min-width:14px;min-height:14px;border-width:1.5px"></span></label>';}html+='</td>';day++;}ci++;}html+='</tr>';}html+='</tbody></table></div>';});g('szr-calout').innerHTML=html;}
 function renderSum(d){var items=[{l:'Acceptance Date',v:fmtL(d.start),hi:false},{l:'Purchase Price',v:fmtMoney(d.pp),hi:false},{l:'Down Payment',v:fmtMoney(d.dp),hi:false},{l:'Loan Amount',v:fmtMoney(d.pp-d.dp),hi:false},{l:'EMD Due',v:fmtS(d.emd)+' — '+fmtMoney(d.em),hi:false},{l:'Inspection Contingency',v:fmtS(d.insp)+' (Day '+d.id+')',hi:false},{l:'Loan &amp; Appraisal',v:fmtS(d.loan)+' (Day '+d.ld+')',hi:false},{l:'Notary Signing',v:fmtS(d.notary)+' (Day '+diff(d.start,d.notary)+')',hi:false},{l:'Close of Escrow',v:fmtS(d.coe)+' (Day '+d.el+')',hi:false},{l:'Remaining Down Payment',v:fmtMoney(d.remainingDown),hi:false},{l:'Est. Closing Costs (2%)',v:fmtMoney(d.closingCosts),hi:false},{l:'Total Wire — Closing Funds',v:fmtMoney(d.totalWire),hi:true}];g('szr-sumg').innerHTML=items.map(function(i){return '<div class="'+(i.hi?'szr-sum-hi':'')+'">'+'<div class="szr-suml">'+i.l+'</div><div class="szr-sumv">'+i.v+'</div></div>';}).join('');g('szr-sumbox').classList.add('on');}
-window.sezGen=function(noScroll){var d=calc();if(!d){alert('Please enter a valid acceptance date.');return;}renderTL(d);renderCal(d);renderSum(d);if(!noScroll)sezGo('szr-dates');};
+window.sezGen=function(noScroll){var d=calc();if(!d){alert('Please enter a valid acceptance date.');return;}renderTL(d);renderCal(d);renderSum(d);if(!noScroll)sezGo('szr-sumbox');};
 window.sezReset=function(){setTodayDate();g('szr-pp').value='1,000,000';g('szr-dp').value='200,000';g('szr-em').value='30,000';g('szr-id').value='7';g('szr-ad').value='17';g('szr-ld').value='17';g('szr-el').value='30';g('szr-sumbox').classList.remove('on');sezGen(true);};
 window.sezTlClick=function(card){var cb=card.querySelector('.szr-cbr'),vis=card.querySelector('.szr-cbv');if(!cb)return;cb.checked=!cb.checked;card.classList.toggle('szr-done',cb.checked);if(vis)vis.classList.toggle('chk',cb.checked);};
 window.sezCalCk=function(lbl,tdId){var cb=lbl.querySelector('.szr-cbr'),vis=lbl.querySelector('.szr-cbv');if(!cb)return;setTimeout(function(){var td=g(tdId);if(td)td.classList.toggle('szr-done',cb.checked);if(vis)vis.classList.toggle('chk',cb.checked);},0);};
@@ -929,6 +938,11 @@ try{var obs=new IntersectionObserver(function(en){en.forEach(function(e){if(e.is
 try{var nls=document.querySelectorAll('#szr-bg .szr-nav a');var sids=['szr-terms','szr-people','szr-op','szr-offer','szr-dates','szr-cal','szr-piti','szr-ck','szr-fees'];var nio=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){nls.forEach(function(a){a.classList.remove('on');});var idx=sids.indexOf(e.target.id);if(idx>=0&&nls[idx])nls[idx].classList.add('on');}});},{rootMargin:'-20% 0px -70% 0px'});sids.forEach(function(id){var el=g(id);if(el)nio.observe(el);});}catch(e){}
 setTodayDate();
 sezGen(true);
+// Set initial formatted values
+var _ppEl=g('szr-pp'),_dpEl=g('szr-dp'),_emEl=g('szr-em');
+if(_ppEl&&!_ppEl.value)_ppEl.value='1,000,000';
+if(_dpEl&&!_dpEl.value)_dpEl.value='200,000';
+if(_emEl&&!_emEl.value)_emEl.value='30,000';
 })();
 </script>
 </body>
