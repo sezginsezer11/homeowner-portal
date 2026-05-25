@@ -280,6 +280,8 @@
 
   /* ── Hide screen-only UI elements ── */
   #szr-print-fab,
+  #szr-fab-group,
+  #szr-print-tip,
   #szr-bg .szr-nav,
   #szr-bg .szr-btn,
   #szr-bg .szr-btn-o,
@@ -289,10 +291,18 @@
     display: none !important;
     visibility: hidden !important;
   }
-  /* Show hero and topic squares in print */
-  #szr-bg .szr-hero { display: block !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  #szr-bg .szr-topics { display: grid !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  #szr-bg .szr-topic { display: flex !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  /* ── Show hero and topic squares on print ── */
+  #szr-bg .szr-hero {
+    display: block !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+  #szr-bg .szr-topics {
+    display: grid !important;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
 
   /* ── Container: full width, no padding ── */
   #szr-bg {
@@ -340,7 +350,6 @@
   #szr-bg .szr-form,
   #szr-bg .szr-calw,
   #szr-bg .szr-fees,
-  #szr-bg #szr-fees,
   #szr-bg .szr-piti {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -380,6 +389,8 @@
   #szr-bg .szr-sum,
   #szr-bg .szr-gt-hi,
   #szr-bg .op-final,
+  #szr-bg #szr-fees,
+  #szr-bg .szr-fees,
   #szr-bg .szr-fees thead,
   #szr-bg .szr-fees .fg td,
   #szr-bg .szr-cal thead,
@@ -456,24 +467,28 @@
 </head>
 <body>
 
-<!-- ── FLOATING PRINT BUTTON (hidden on print) ── -->
-<button id="szr-print-fab" onclick="szrDoPrint()" aria-label="Print or save as PDF">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="6 9 6 2 18 2 18 9"></polyline>
-    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-    <rect x="6" y="14" width="12" height="8"></rect>
-  </svg>
-  Print / Save PDF
-</button>
+<!-- ── FLOATING BUTTONS (hidden on print) ── -->
+<div id="szr-fab-group" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
+  <button id="szr-print-fab" onclick="szrDoPrint()" aria-label="Print or save as PDF" style="display:flex;align-items:center;gap:9px;background:#263744;color:#fff;border:none;border-radius:4px;padding:13px 22px;font-size:11px;font-family:&quot;Optima&quot;,&quot;Palatino Linotype&quot;,Georgia,serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px rgba(38,55,68,.38);transition:background .2s,transform .15s;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 6 2 18 2 18 9"></polyline>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+      <rect x="6" y="14" width="12" height="8"></rect>
+    </svg>
+    Save as PDF
+  </button>
+  <a id="szr-dl-fab" href="javascript:void(0)" onclick="szrDownload()" download="HomeBuyerGuide-SezSezer.html" style="display:flex;align-items:center;gap:9px;background:#c9a84c;color:#1a1a2e;border:none;border-radius:4px;padding:13px 22px;font-size:11px;font-family:&quot;Optima&quot;,&quot;Palatino Linotype&quot;,Georgia,serif;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px rgba(38,55,68,.38);text-decoration:none;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+      <polyline points="7 10 12 15 17 10"></polyline>
+      <line x1="12" y1="15" x2="12" y2="3"></line>
+    </svg>
+    Download
+  </a>
+</div>
 
 <!-- Global print helpers — outside IIFE so onclick can reach them -->
 <script>
-function sezFmtMoney(input) {
-  var raw = input.value.replace(/[^0-9]/g, '');
-  if (raw === '') return;
-  var num = parseInt(raw, 10);
-  if (!isNaN(num)) input.value = num.toLocaleString('en-US');
-}
 function szrForceVisible() {
   document.querySelectorAll('#szr-bg .szr-sec').forEach(function(s) {
     s.style.opacity = '1';
@@ -496,6 +511,17 @@ function szrDoPrint() {
   setTimeout(function() { window.print(); }, 120);
 }
 window.addEventListener('beforeprint', szrForceVisible);
+function szrFmtMoney(inp) {
+  var raw = inp.value.replace(/[^0-9]/g, '');
+  if (raw === '') { inp.value = ''; return; }
+  inp.value = parseInt(raw, 10).toLocaleString('en-US');
+}
+function szrDownload() {
+  var a = document.createElement('a');
+  a.href = window.location.href;
+  a.download = 'HomeBuyerGuide-SezSezer.html';
+  a.click();
+}
 window.addEventListener('afterprint', function() {
   document.querySelectorAll('#szr-bg .szr-card, #szr-bg .szr-gt').forEach(function(el) {
     el.style.transition = '';
@@ -714,9 +740,9 @@ document.getElementById('szr-print-fab').addEventListener('mouseleave', function
   <div class="szr-form">
     <div class="szr-fg">
       <div class="szr-fld"><label>Acceptance Date (Day 0)</label><input type="date" id="szr-d0"></div>
-      <div class="szr-fld"><label>Purchase Price ($)</label><input type="text" id="szr-pp" placeholder="1,000,000" oninput="sezFmtMoney(this)" onblur="sezFmtMoney(this)"></div>
-      <div class="szr-fld"><label>Down Payment ($)</label><input type="text" id="szr-dp" placeholder="200,000" oninput="sezFmtMoney(this)" onblur="sezFmtMoney(this)"></div>
-      <div class="szr-fld"><label>Earnest Money Deposit ($)</label><input type="text" id="szr-em" placeholder="30,000" oninput="sezFmtMoney(this)" onblur="sezFmtMoney(this)"></div>
+      <div class="szr-fld"><label>Purchase Price ($)</label><input type="text" id="szr-pp" value="1,000,000" oninput="szrFmtMoney(this)"></div>
+      <div class="szr-fld"><label>Down Payment ($)</label><input type="text" id="szr-dp" value="200,000" oninput="szrFmtMoney(this)"></div>
+      <div class="szr-fld"><label>Earnest Money Deposit ($)</label><input type="text" id="szr-em" value="30,000" oninput="szrFmtMoney(this)"></div>
       <div class="szr-fld"><label>Inspection Contingency (days)</label><input type="number" id="szr-id" value="7" min="1" max="30"></div>
       <div class="szr-fld"><label>Appraisal Contingency (days)</label><input type="number" id="szr-ad" value="17" min="1" max="45"></div>
       <div class="szr-fld"><label>Loan Contingency (days)</label><input type="number" id="szr-ld" value="17" min="1" max="45"></div>
@@ -938,11 +964,6 @@ try{var obs=new IntersectionObserver(function(en){en.forEach(function(e){if(e.is
 try{var nls=document.querySelectorAll('#szr-bg .szr-nav a');var sids=['szr-terms','szr-people','szr-op','szr-offer','szr-dates','szr-cal','szr-piti','szr-ck','szr-fees'];var nio=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){nls.forEach(function(a){a.classList.remove('on');});var idx=sids.indexOf(e.target.id);if(idx>=0&&nls[idx])nls[idx].classList.add('on');}});},{rootMargin:'-20% 0px -70% 0px'});sids.forEach(function(id){var el=g(id);if(el)nio.observe(el);});}catch(e){}
 setTodayDate();
 sezGen(true);
-// Set initial formatted values
-var _ppEl=g('szr-pp'),_dpEl=g('szr-dp'),_emEl=g('szr-em');
-if(_ppEl&&!_ppEl.value)_ppEl.value='1,000,000';
-if(_dpEl&&!_dpEl.value)_dpEl.value='200,000';
-if(_emEl&&!_emEl.value)_emEl.value='30,000';
 })();
 </script>
 </body>
