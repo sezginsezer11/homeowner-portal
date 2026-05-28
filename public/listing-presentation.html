@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sez Sezer — Luxury Marketing Proposal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=Libre+Caslon+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--lake:#344a57;--charcoal:#464d4f;--slate:#8fa1ad;--ceramic:#b1a39b;--mist:#dadde1;--matchsticks:#e8e6e5;--cream:#e7e4df;--navy:#2c3544;--warm-white:#f2f0ed;--gold:#c5a880;--font-display:'Cormorant Garamond',Georgia,serif;--font-heading:'Libre Caslon Display',Georgia,serif;--font-body:'DM Sans','Helvetica Neue',sans-serif;--page-w:11in;--page-h:8.5in;--pad:0.55in}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+body{font-family:var(--font-body);color:var(--charcoal);background:#b8b5b0;line-height:1.55;font-size:10pt}
+.page{width:var(--page-w);height:var(--page-h);margin:28px auto;background:var(--cream);position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.18);page-break-after:always;page-break-inside:avoid}
+.page:last-child{page-break-after:auto}
+/* The lookup page does NOT have fixed height so it can scroll */
+.page-lookup{width:var(--page-w);margin:28px auto;background:var(--cream);position:relative;overflow:visible;box-shadow:0 8px 40px rgba(0,0,0,.18);page-break-after:always;page-break-inside:avoid;min-height:var(--page-h)}
+@page{size:11in 8.5in landscape;margin:0}
+@media print{body{background:#fff}.page,.page-lookup{margin:0;box-shadow:none}.reveal,.reveal-left,.reveal-right{opacity:1!important;transform:none!important}.no-print{display:none!important}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-40px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(40px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal-right.visible{opacity:1;transform:translateX(0)}
+.delay-1{transition-delay:.12s}.delay-2{transition-delay:.24s}.delay-3{transition-delay:.36s}.delay-4{transition-delay:.48s}.delay-5{transition-delay:.6s}
+.split{display:grid;grid-template-columns:28% 72%;height:100%}
+.split-half{display:grid;grid-template-columns:45% 55%;height:100%}
+.sb{padding:var(--pad);display:flex;flex-direction:column;justify-content:center;position:relative}
+.sb::after{content:'';position:absolute;right:0;top:8%;height:84%;width:1px;background:var(--slate);opacity:.35}
+.sb-dark{background:var(--navy);color:#fff}
+.sb-dark::after{background:rgba(255,255,255,.15)}
+.ct{padding:var(--pad);position:relative;overflow:hidden}
+.lbl{font-family:var(--font-body);font-size:7.5pt;letter-spacing:3.5px;text-transform:uppercase;color:var(--slate);margin-bottom:6px;font-weight:500}
+.lbl-w{color:rgba(255,255,255,.5)}
+.ttl{font-family:var(--font-display);font-size:36pt;font-weight:300;line-height:1.08;color:var(--charcoal)}
+.ttl-w{color:#fff}
+.ttl em{font-style:italic;font-weight:300}
+.pttl{font-family:var(--font-display);font-size:22pt;font-weight:400;line-height:1.22;color:var(--charcoal);margin-bottom:4px}
+.psub{font-family:var(--font-display);font-size:18pt;font-weight:300;font-style:italic;color:var(--lake);line-height:1.22}
+.desc{font-size:10pt;line-height:1.65;color:rgba(255,255,255,.62);margin-top:14px;font-family:var(--font-display);font-style:italic}
+.div-g{width:100%;height:1px;background:linear-gradient(90deg,var(--gold) 0%,transparent 100%);margin:10px 0}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.logo svg{width:28px;height:28px;flex-shrink:0}
+.logo-n{font-family:var(--font-body);font-size:11pt;font-weight:600;letter-spacing:3px;color:var(--charcoal)}
+.logo-s{font-size:6.5pt;letter-spacing:1px;color:var(--slate);margin-top:-2px}
+.sig{position:absolute;bottom:20px;right:28px;font-family:var(--font-display);font-size:15pt;font-style:italic;color:var(--ceramic);opacity:.75}
+.sig-w{color:rgba(255,255,255,.35)}
+.logo-svg{fill:none;stroke:var(--charcoal);stroke-width:2}
+.ph-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:3px}
+.pg-img{width:100%;height:100%;object-fit:cover}
+.crd{background:var(--navy);color:#fff;padding:16px 20px;border-radius:5px}
+.crd .crd-l{font-size:7pt;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:5px}
+.crd .crd-t{font-family:var(--font-display);font-size:15pt;font-weight:400}
+.crd ul{list-style:disc;padding-left:15px;margin-top:6px}
+.crd ul li{font-size:8.2pt;color:rgba(255,255,255,.78);margin-bottom:3px}
+.c3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.stat{background:#fff;border:1px solid var(--mist);border-radius:8px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:10px;transition:transform .25s,box-shadow .25s}
+.stat:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.stat-thumb{width:56px;height:56px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.stat-info h4{font-size:9pt;font-weight:600;color:var(--charcoal)}
+.stat-info p{font-size:7.5pt;color:var(--slate)}
+.stat-val{margin-left:auto;text-align:right}
+.stat-val .num{font-family:var(--font-display);font-size:28pt;font-weight:300;color:var(--lake);line-height:1}
+.stat-val .lab{font-size:6.5pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--slate);display:block;margin-bottom:2px}
+.tl-track{position:relative;padding-left:36px}
+.tl-track::before{content:'';position:absolute;left:13px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--gold) 0%,var(--slate) 100%)}
+.tl-node{position:relative;margin-bottom:18px}
+.tl-node::before{content:'';position:absolute;left:-36px;top:4px;width:24px;height:24px;border-radius:50%;border:2px solid var(--gold);background:var(--cream)}
+.tl-node.active::before{background:var(--navy);border-color:var(--gold);box-shadow:0 0 0 4px rgba(197,168,128,.25)}
+.tl-node .tl-l{font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:600}
+.tl-node .tl-t{font-size:9.5pt;color:var(--charcoal);margin-top:2px}
+.chk{display:flex;align-items:flex-start;gap:10px;padding:5px 0;cursor:pointer}
+.chk input[type=checkbox]{display:none}
+.chk-box{width:18px;height:18px;border:2px solid var(--slate);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .25s;margin-top:1px;background:#fff}
+.chk input:checked+.chk-box{background:var(--navy);border-color:var(--navy)}
+.chk input:checked+.chk-box::after{content:'✓';color:#fff;font-size:11px;font-weight:700}
+.chk input:checked~.chk-txt{text-decoration:line-through;color:var(--slate)}
+.chk-txt{font-size:8.2pt;line-height:1.45;color:var(--charcoal)}
+.rsk{background:var(--navy);color:#fff;padding:14px 18px;border-radius:5px;transition:transform .25s}
+.rsk:hover{transform:translateY(-2px)}
+.rsk .rl{font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:3px}
+.rsk p{font-size:9pt}
+.arow{display:grid;grid-template-columns:200px 1fr;background:var(--navy);color:#fff;border-radius:5px;overflow:hidden;margin-bottom:12px;transition:transform .25s}
+.arow:hover{transform:translateY(-2px)}
+.arow-l{padding:18px 22px;display:flex;flex-direction:column;justify-content:center}
+.arow-l .al{font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:3px}
+.arow-l h3{font-family:var(--font-display);font-size:14pt;font-weight:500}
+.arow-l .as{font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.38);margin-top:5px}
+.arow-r{padding:18px 22px;font-size:8.2pt;line-height:1.6;color:rgba(255,255,255,.82);display:flex;flex-direction:column;justify-content:center}
+.arow-r .tags{font-size:7pt;color:rgba(255,255,255,.45);margin-top:5px}
+.ec{border:1px solid var(--mist);padding:14px 18px;border-radius:5px;background:rgba(255,255,255,.5)}
+.ec h4{font-size:7pt;letter-spacing:2.5px;text-transform:uppercase;color:var(--slate);margin-bottom:6px}
+.ec-i{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--mist);font-size:8.5pt;font-weight:500;letter-spacing:1px;text-transform:uppercase}
+.ec-i:last-child{border-bottom:none}
+.ec-d{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.esc{font-family:var(--font-display);font-size:14pt;padding:12px 0;border-bottom:1px solid var(--mist);display:flex;align-items:center;gap:12px}
+.esc-n{width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-size:8pt;font-weight:600;flex-shrink:0}
+.cover{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;position:relative}
+.cover-ring{position:absolute;border:1.5px solid var(--mist);border-radius:50%;opacity:.2}
+.cover-t{font-family:var(--font-body);font-size:15pt;letter-spacing:9px;text-transform:uppercase;color:var(--charcoal);font-weight:300}
+.cover-name{font-family:var(--font-heading);font-size:28pt;letter-spacing:4px;color:var(--charcoal);margin-top:6px}
+.cover-sub{font-family:var(--font-body);font-size:7pt;letter-spacing:2.5px;text-transform:uppercase;color:var(--slate);margin-top:4px}
+.cover-est{font-family:var(--font-body);font-size:7pt;letter-spacing:2px;color:var(--slate)}
+.yt-wrap{position:relative;width:100%;padding-bottom:56.25%;border-radius:10px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.yt-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
+.ck-li li{list-style:none;font-size:8.5pt;margin-bottom:5px;padding-left:20px;position:relative}
+.ck-li li::before{content:'✔';position:absolute;left:0;color:var(--gold);font-weight:700}
+
+/* ======== PROPERTY LOOKUP (embedded directly on page) ======== */
+.lookup-bar{display:flex;gap:10px;margin-bottom:20px}
+.lookup-bar input{flex:1;padding:12px 16px;border:2px solid var(--mist);border-radius:8px;font-size:11pt;font-family:var(--font-body);color:var(--charcoal);background:#fff;transition:border-color .3s}
+.lookup-bar input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(197,168,128,.15)}
+.lookup-bar input::placeholder{color:var(--slate)}
+.lookup-btn{padding:12px 28px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:10pt;font-weight:600;cursor:pointer;transition:all .25s;white-space:nowrap;font-family:var(--font-body);letter-spacing:.5px}
+.lookup-btn:hover{background:var(--lake);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.lookup-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.lookup-btn:active{transform:translateY(0)}
+#lookup-status{text-align:center;padding:8px;font-size:9pt;color:var(--slate);min-height:20px}
+#lookup-status.error{color:#c0392b}
+#lookup-status.success{color:var(--gold)}
+.prop-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.prop-field{display:flex;flex-direction:column;gap:3px}
+.prop-field.span2{grid-column:span 2}
+.prop-field.span3{grid-column:span 3}
+.prop-field label{font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:var(--slate);font-weight:600}
+.prop-field input,.prop-field textarea{padding:8px 12px;border:1.5px solid var(--mist);border-radius:5px;font-size:9pt;font-family:var(--font-body);color:var(--charcoal);background:#fff;transition:border-color .3s}
+.prop-field input:focus,.prop-field textarea:focus{outline:none;border-color:var(--gold)}
+.prop-field textarea{resize:vertical;min-height:50px}
+.prop-field input.filled{border-color:var(--gold);background:rgba(197,168,128,.06)}
+.apply-row{margin-top:16px;display:flex;gap:10px;align-items:center}
+.apply-btn{padding:11px 28px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-size:10pt;font-weight:700;cursor:pointer;transition:all .25s;font-family:var(--font-body);letter-spacing:.5px}
+.apply-btn:hover{background:var(--lake);transform:translateY(-1px)}
+.clear-btn{padding:11px 20px;background:#fff;color:var(--charcoal);border:1.5px solid var(--mist);border-radius:8px;font-size:9pt;cursor:pointer;transition:all .2s;font-family:var(--font-body)}
+.clear-btn:hover{border-color:var(--slate)}
+.apply-note{font-size:8pt;color:var(--slate);margin-left:8px}
+
+@media screen and (max-width:1200px){.page,.page-lookup{width:100%;height:auto;aspect-ratio:auto}.page{aspect-ratio:11/8.5}}
+</style>
+</head>
+<body>
+
+<!-- ======== PAGE 1: COVER ======== -->
+<div class="page">
+  <div class="cover">
+    <div class="cover-ring" style="width:340px;height:340px;top:-70px;right:-70px"></div>
+    <div class="cover-ring" style="width:280px;height:280px;top:-40px;right:-40px"></div>
+    <div class="reveal" style="transition-delay:.3s"><div class="cover-t">LUXURY MARKETING PROPOSAL</div></div>
+    <div id="cover-address" class="reveal" style="margin-top:16px;transition-delay:.45s;font-family:var(--font-display);font-size:16pt;color:var(--lake);font-style:italic;min-height:20px"></div>
+    <div class="reveal" style="margin-top:80px;transition-delay:.6s">
+      <svg width="40" height="40" viewBox="0 0 100 100" style="display:block;margin:0 auto"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg>
+      <div class="cover-est" style="margin-top:6px">ESTABLISHED IN &nbsp;&nbsp; TWENTY FIFTEEN</div>
+      <div class="cover-name">SEZ SEZER</div>
+      <div class="cover-sub">CARMEL VALLEY &middot; RANCHO SANTA FE &middot; DEL MAR</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE 2: PROPERTY LOOKUP & DETAILS (scrollable, not fixed height) ======== -->
+<div class="page-lookup no-print">
+  <div style="padding:40px 60px">
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+      <svg width="32" height="32" viewBox="0 0 100 100"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg>
+      <div><div class="logo-n">SEZ SEZER</div><div class="logo-s">carmelvalley.com</div></div>
+    </div>
+    <div class="div-g" style="margin:12px 0 20px"></div>
+
+    <div style="text-align:center;margin-bottom:24px">
+      <div class="lbl" style="text-align:center;letter-spacing:5px;margin-bottom:4px">PROPERTY DETAILS</div>
+      <div style="font-family:var(--font-display);font-size:26pt;font-weight:300;color:var(--charcoal)">Enter Property Address</div>
+      <div style="font-size:9pt;color:var(--slate);margin-top:4px">Search to auto-fill details, or type everything in manually. All fields are editable.</div>
+    </div>
+
+    <!-- THE BIG SEARCH BAR -->
+    <div class="lookup-bar">
+      <input type="text" id="address-input" placeholder="Enter full address — e.g. 5054 Seachase Way, San Diego, CA 92130">
+      <button class="lookup-btn" id="lookup-btn" onclick="lookupProperty()">
+        <span id="btn-text">🔍 Look Up Property</span>
+      </button>
+    </div>
+    <div id="lookup-status"></div>
+
+    <!-- EDITABLE PROPERTY FIELDS -->
+    <div class="prop-grid" style="margin-top:16px">
+      <div class="prop-field span3"><label>Full Address</label><input type="text" id="pf-address" placeholder="123 Ocean View Dr, San Diego, CA 92130"></div>
+      <div class="prop-field"><label>List Price</label><input type="text" id="pf-price" placeholder="$2,495,000"></div>
+      <div class="prop-field"><label>Property Type</label><input type="text" id="pf-type" placeholder="Single Family Residence"></div>
+      <div class="prop-field"><label>Community</label><input type="text" id="pf-community" placeholder="Pacific Highlands Ranch"></div>
+      <div class="prop-field"><label>Bedrooms</label><input type="text" id="pf-beds" placeholder="5"></div>
+      <div class="prop-field"><label>Bathrooms</label><input type="text" id="pf-baths" placeholder="4"></div>
+      <div class="prop-field"><label>Approx Sq Ft</label><input type="text" id="pf-sqft" placeholder="3,500"></div>
+      <div class="prop-field"><label>Lot Size</label><input type="text" id="pf-lot" placeholder="8,200 sq ft"></div>
+      <div class="prop-field"><label>Year Built</label><input type="text" id="pf-year" placeholder="2005"></div>
+      <div class="prop-field"><label>Garage</label><input type="text" id="pf-garage" placeholder="3-Car Attached"></div>
+      <div class="prop-field"><label>Last Sold Date</label><input type="text" id="pf-lastsold" placeholder="March 2019"></div>
+      <div class="prop-field"><label>Last Sold Price</label><input type="text" id="pf-lastsoldprice" placeholder="$1,850,000"></div>
+      <div class="prop-field"><label>HOA</label><input type="text" id="pf-hoa" placeholder="$150/mo or None"></div>
+      <div class="prop-field"><label>School District</label><input type="text" id="pf-school" placeholder="San Dieguito Union HSD"></div>
+      <div class="prop-field"><label>Mello-Roos</label><input type="text" id="pf-mello" placeholder="Yes / No"></div>
+      <div class="prop-field span3"><label>Key Features (comma separated)</label><input type="text" id="pf-features" placeholder="Pool, Ocean Views, Gourmet Kitchen, Smart Home, Solar"></div>
+      <div class="prop-field span3"><label>Property Description</label><textarea id="pf-desc" placeholder="Stunning Carmel Valley home featuring open floor plan, designer finishes..." rows="3"></textarea></div>
+    </div>
+
+    <div class="apply-row">
+      <button class="apply-btn" onclick="applyToPresentation()">✓ Apply to Presentation</button>
+      <button class="clear-btn" onclick="clearFields()">Clear All</button>
+      <span class="apply-note">Populates the Property Overview page and Cover page below</span>
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE 3: PROPERTY OVERVIEW (auto-populated) ======== -->
+<div class="page">
+  <div style="display:grid;grid-template-columns:42% 58%;height:100%">
+    <div style="overflow:hidden"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="pg-img" alt="Property"></div>
+    <div style="padding:var(--pad);display:flex;flex-direction:column;justify-content:center">
+      <div class="lbl reveal">PROPERTY OVERVIEW</div>
+      <div id="disp-address" class="pttl reveal delay-1" style="font-size:18pt">Enter property address above</div>
+      <div id="disp-community" class="psub reveal delay-1" style="font-size:13pt"></div>
+      <div class="div-g"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+        <div class="reveal delay-1" style="text-align:center;padding:14px;background:var(--navy);border-radius:6px;color:#fff"><div style="font-family:var(--font-display);font-size:28pt;font-weight:300;color:var(--gold)" id="disp-beds">—</div><div style="font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:2px">BEDROOMS</div></div>
+        <div class="reveal delay-2" style="text-align:center;padding:14px;background:var(--navy);border-radius:6px;color:#fff"><div style="font-family:var(--font-display);font-size:28pt;font-weight:300;color:var(--gold)" id="disp-baths">—</div><div style="font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:2px">BATHROOMS</div></div>
+        <div class="reveal delay-3" style="text-align:center;padding:14px;background:var(--navy);border-radius:6px;color:#fff"><div style="font-family:var(--font-display);font-size:28pt;font-weight:300;color:var(--gold)" id="disp-sqft">—</div><div style="font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:2px">SQ FT</div></div>
+      </div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:4px 20px">
+        <div class="reveal delay-2" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">List Price</span><span style="font-size:9pt;font-weight:600" id="disp-price">—</span></div>
+        <div class="reveal delay-2" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">Type</span><span style="font-size:9pt;font-weight:600" id="disp-type">—</span></div>
+        <div class="reveal delay-3" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">Lot Size</span><span style="font-size:9pt;font-weight:600" id="disp-lot">—</span></div>
+        <div class="reveal delay-3" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">Year Built</span><span style="font-size:9pt;font-weight:600" id="disp-year">—</span></div>
+        <div class="reveal delay-3" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">Garage</span><span style="font-size:9pt;font-weight:600" id="disp-garage">—</span></div>
+        <div class="reveal delay-3" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">HOA</span><span style="font-size:9pt;font-weight:600" id="disp-hoa">—</span></div>
+        <div class="reveal delay-4" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">Last Sold</span><span style="font-size:9pt;font-weight:600" id="disp-lastsold">—</span></div>
+        <div class="reveal delay-4" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">Last Sold Price</span><span style="font-size:9pt;font-weight:600" id="disp-lastsoldprice">—</span></div>
+        <div class="reveal delay-4" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">School District</span><span style="font-size:9pt;font-weight:600" id="disp-school">—</span></div>
+        <div class="reveal delay-4" style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--mist)"><span style="font-size:8pt;color:var(--slate)">Mello-Roos</span><span style="font-size:9pt;font-weight:600" id="disp-mello">—</span></div>
+      </div>
+      <div class="reveal delay-5" style="margin-top:10px"><div class="lbl">KEY FEATURES</div><div id="disp-features" style="font-size:8.5pt;line-height:1.5">—</div></div>
+      <span class="sig">Sez Sezer</span>
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE 4: ABOUT ======== -->
+<div class="page">
+  <div style="display:grid;grid-template-columns:48% 52%;height:100%">
+    <div style="padding:var(--pad);padding-top:.9in;display:flex;flex-direction:column;justify-content:center">
+      <div class="ttl reveal-left" style="font-size:38pt;margin-bottom:22px">ABOUT<br>SEZ SEZER</div>
+      <p class="reveal-left delay-1" style="font-size:9pt;line-height:1.7;margin-bottom:12px">Sez Sezer is a Carmel Valley real estate expert known for his strategic approach, strong negotiation skills, and results-driven marketing. He doesn't just list homes — he positions them to attract the right buyers and maximize value.</p>
+      <p class="reveal-left delay-2" style="font-size:9pt;line-height:1.7;margin-bottom:12px">With deep local knowledge and a strong network, Sez understands how to navigate the nuances of the Carmel Valley market and create opportunities others miss, including off-market deals.</p>
+      <p class="reveal-left delay-3" style="font-size:9pt;line-height:1.7">Detail-oriented, proactive, and highly communicative, Sez guides his clients through every step with clarity and confidence — delivering a seamless experience and exceptional outcomes.</p>
+    </div>
+    <div style="overflow:hidden" class="reveal-right"><img src="images/sez-headshot.jpg" class="pg-img" alt="Sez Sezer"></div>
+  </div>
+</div>
+
+<!-- ======== PAGE 5: TRUTH ======== -->
+<div class="page"><div class="split"><div class="sb sb-dark"><div class="lbl lbl-w">MARKET INTELLIGENCE</div><div class="ttl ttl-w reveal-left" style="font-size:32pt">The Truth About Today's <em>Market</em></div><span class="sig sig-w">Sez Sezer</span></div><div class="ct"><div class="logo"><svg width="28" height="28" viewBox="0 0 100 100"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg><div><div class="logo-n">SEZ SEZER</div><div class="logo-s">carmelvalley.com</div></div></div><div class="div-g"></div><div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px"><div class="reveal delay-1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10pt;font-weight:600">3</div><div style="font-family:var(--font-display);font-size:12pt">Facts to Understand</div></div><div class="div-g"></div><ul style="list-style:disc;padding-left:15px"><li style="font-size:8.2pt;margin-bottom:5px">Buyers form price opinions online before stepping inside.</li><li style="font-size:8.2pt;margin-bottom:5px">The first <strong>7–10 days</strong> generate the highest attention.</li><li style="font-size:8.2pt">Perception of demand influences <strong>negotiation strength</strong>.</li></ul></div><div class="reveal delay-2"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10pt;font-weight:600">3</div><div style="font-family:var(--font-display);font-size:12pt">Things to Avoid</div></div><div class="div-g"></div><ul style="list-style:disc;padding-left:15px"><li style="font-size:8.2pt;margin-bottom:5px">Weak launch momentum.</li><li style="font-size:8.2pt;margin-bottom:5px">Looking <strong>overpriced</strong> vs surrounding listings.</li><li style="font-size:8.2pt">Becoming a "sale" listing buyers skip.</li></ul></div><div class="reveal delay-3"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div style="width:28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10pt;font-weight:600">3</div><div style="font-family:var(--font-display);font-size:12pt">Things to Accomplish</div></div><div class="div-g"></div><ul style="list-style:disc;padding-left:15px"><li style="font-size:8.2pt;margin-bottom:5px">Control the <strong>first impression</strong>.</li><li style="font-size:8.2pt;margin-bottom:5px">Signal strong <strong>interest</strong> early.</li><li style="font-size:8.2pt">Establish as <strong>the benchmark</strong>.</li></ul></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:18px;height:100px;border-radius:5px;overflow:hidden" class="reveal delay-4"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="ph-img" alt="" style="filter:brightness(.92)"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="ph-img" alt="" style="filter:brightness(.85)"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="ph-img" alt="" style="filter:brightness(.78)"></div></div></div></div>
+
+<!-- ======== PAGE 6: RISK ======== -->
+<div class="page"><div class="split"><div class="sb sb-dark"><div class="lbl lbl-w">SELLER AWARENESS</div><div class="ttl ttl-w reveal-left" style="font-size:38pt">The<br><em>Risk</em></div><span class="sig sig-w">Sez Sezer</span></div><div class="ct"><div class="logo"><svg width="28" height="28" viewBox="0 0 100 100"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg><div><div class="logo-n">SEZ SEZER</div><div class="logo-s">carmelvalley.com</div></div></div><div class="pttl reveal">The 4 Biggest Risks Sellers Don't See Coming</div><div class="div-g"></div><div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-top:12px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="rsk reveal delay-1"><div class="rl">RISK 01</div><p>Overpricing &amp; "sale listing" reputation</p></div><div class="rsk reveal delay-2"><div class="rl">RISK 02</div><p>Underexposure to the right buyer pool</p></div><div class="rsk reveal delay-3"><div class="rl">RISK 03</div><p>Weak launch — no urgency, no competition</p></div><div class="rsk reveal delay-4"><div class="rl">RISK 04</div><p>Poor presentation = price compression</p></div></div><div class="reveal delay-3" style="border:1px solid var(--mist);padding:14px 16px;border-radius:5px"><div style="font-size:7pt;letter-spacing:2px;text-transform:uppercase;color:var(--slate);margin-bottom:8px">WHAT WE AVOID AT ALL COSTS</div><ul style="list-style:disc;padding-left:15px"><li style="font-size:8.5pt;margin-bottom:4px">Overpricing</li><li style="font-size:8.5pt;margin-bottom:4px">Sitting on the market</li><li style="font-size:8.5pt;margin-bottom:4px">Stale listing reputation</li><li style="font-size:8.5pt">Losing negotiation control</li></ul></div></div><div style="display:grid;grid-template-columns:1fr 1fr;border-radius:6px;overflow:hidden;border:1px solid var(--mist);margin-top:18px" class="reveal delay-4"><div><div style="font-size:7pt;letter-spacing:2.5px;text-transform:uppercase;padding:10px 16px;font-weight:600;background:var(--slate);color:#fff">MOST AGENTS</div><div style="padding:14px 16px"><p style="font-size:8.5pt;margin-bottom:4px">Upload to MLS</p><p style="font-size:8.5pt;margin-bottom:4px">Basic photography</p><p style="font-size:8.5pt;margin-bottom:4px">Post on social media</p><p style="font-size:8.5pt">Wait for showings</p></div></div><div><div style="font-size:7pt;letter-spacing:2.5px;text-transform:uppercase;padding:10px 16px;font-weight:600;background:var(--navy);color:rgba(255,255,255,.8)">THE SEZ SEZER SYSTEM</div><div style="padding:14px 16px"><ul class="ck-li" style="padding:0"><li>Pre-market positioning strategy</li><li>Buyer persona targeting</li><li>Paid digital campaign + retargeting ads</li><li>Dedicated property website + broker outreach</li></ul></div></div></div></div></div></div>
+
+<!-- ======== PAGE 7: FRAMEWORK ======== -->
+<div class="page"><div class="split"><div class="sb sb-dark"><div class="lbl lbl-w">THE SYSTEM</div><div class="ttl ttl-w reveal-left" style="font-size:34pt">Frame<br><em>work</em></div><div class="desc reveal-left delay-1">So what actually works?<br>Here's exactly how we do it.</div><span class="sig sig-w">Sez Sezer</span></div><div class="ct"><div class="logo"><svg width="28" height="28" viewBox="0 0 100 100"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg><div><div class="logo-n">SEZ SEZER</div><div class="logo-s">carmelvalley.com</div></div></div><div class="lbl">OUR SYSTEM</div><div class="pttl">The 3-Part Launch Framework —</div><div class="psub">designed to maximize your sale price</div><div class="div-g"></div><div class="c3" style="margin-top:8px"><div class="crd reveal delay-1"><div class="crd-l">PILLAR 01</div><div class="crd-t">Positioning</div><ul><li>Story &amp; narrative</li><li>Price strategy</li><li>Differentiation</li></ul></div><div class="crd reveal delay-2"><div class="crd-l">PILLAR 02</div><div class="crd-t">Production</div><ul><li>Cinematic visuals</li><li>Digital assets</li><li>Property website hub</li></ul></div><div class="crd reveal delay-3"><div class="crd-l">PILLAR 03</div><div class="crd-t">Marketing</div><ul><li>Targeted distribution</li><li>Retargeting ads</li><li>Broker outreach</li></ul></div></div><div style="margin-top:18px"><div style="font-family:var(--font-display);font-size:13pt;font-style:italic;margin:6px 0 10px">"How does this make me more money?"</div><div class="c3"><div class="crd reveal delay-3" style="text-align:center"><div class="crd-l">RIGHT PRICING</div><div style="font-size:11pt;margin-top:5px">Drives Competition</div></div><div class="crd reveal delay-4" style="text-align:center"><div class="crd-l">COMPETITION</div><div style="font-size:11pt;margin-top:5px">Creates Stronger Offers</div></div><div class="crd reveal delay-5" style="text-align:center"><div class="crd-l">STRONGER OFFERS</div><div style="font-size:11pt;margin-top:5px">Delivers Higher Net</div></div></div></div></div></div></div>
+
+<!-- ======== PAGE 8: TIMELINE ======== -->
+<div class="page"><div class="split"><div class="sb sb-dark"><div class="lbl lbl-w">THE PLAN</div><div class="ttl ttl-w reveal-left" style="font-size:30pt">Launch<br><em>Timeline</em></div><span class="sig sig-w">Sez Sezer</span></div><div class="ct"><div class="logo"><svg width="28" height="28" viewBox="0 0 100 100"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg><div><div class="logo-n">SEZ SEZER</div><div class="logo-s">carmelvalley.com</div></div></div><div class="pttl reveal">How We Create a Demand Spike</div><div class="div-g"></div><div style="display:grid;grid-template-columns:1.1fr 1fr;gap:28px;margin-top:12px"><div><div class="lbl reveal">DAY-BY-DAY EXECUTION</div><div class="tl-track" style="margin-top:10px"><div class="tl-node reveal delay-1"><div class="tl-l">DAY 14 TO -1</div><div class="tl-t">Prep + staging + media schedule</div></div><div class="tl-node reveal delay-2"><div class="tl-l">DAY 7 TO -1</div><div class="tl-t">Website build + teaser / coming soon</div></div><div class="tl-node active reveal delay-3"><div class="tl-l" style="color:var(--gold)">DAY 0 — LAUNCH</div><div class="tl-t" style="font-weight:600">Launch everywhere — simultaneously</div></div><div class="tl-node reveal delay-4"><div class="tl-l">DAYS 1–7</div><div class="tl-t">Paid amplification + broker outreach</div></div><div class="tl-node reveal delay-5"><div class="tl-l">DAYS 8–14</div><div class="tl-t">Adjust based on data + buyer feedback</div></div></div></div><div><div class="lbl reveal">LAUNCH &amp; MOMENTUM</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><div class="reveal delay-1" style="background:var(--matchsticks);padding:12px;border-radius:4px"><div style="font-size:7pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:600">FACTS</div><div style="font-size:8.5pt;margin-top:3px">Buyers respond to visible demand</div></div><div class="reveal delay-2" style="background:var(--matchsticks);padding:12px;border-radius:4px"><div style="font-size:7pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--slate);font-weight:600">AVOID</div><div style="font-size:8.5pt;margin-top:3px">Slow traffic &amp; weak early perception</div></div></div><div class="ec reveal delay-3" style="margin-top:14px"><h4>ADDING EASE TO YOUR SALE</h4><div class="ec-i"><div class="ec-d"></div>PRE-MARKET</div><div class="ec-i"><div class="ec-d"></div>MARKETING</div><div class="ec-i"><div class="ec-d"></div>SHOWING</div><div class="ec-i"><div class="ec-d"></div>NEGOTIATION</div><div class="ec-i"><div class="ec-d"></div>INSPECTION</div><div class="ec-i"><div class="ec-d"></div>CLOSING</div></div></div></div></div></div></div>
+
+<!-- ======== PAGE 9: DEMAND CURVE ======== -->
+<div class="page"><div style="height:100%;padding:var(--pad);display:grid;grid-template-rows:auto 1fr"><div style="text-align:center;margin-bottom:12px"><div class="lbl reveal" style="text-align:center">THE DEMAND CURVE</div><div class="pttl reveal delay-1" style="text-align:center">What Happens When the System Works</div><div class="div-g" style="margin:8px auto;width:60%"></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:center"><div class="reveal-left delay-1"><svg viewBox="0 0 400 240" style="width:100%"><defs><linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--gold)" stop-opacity=".25"/><stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/></linearGradient></defs><line x1="50" y1="200" x2="370" y2="200" stroke="var(--slate)" stroke-width="1"/><path d="M50,195 C90,190 110,180 130,120 C150,60 170,40 210,35 C250,40 280,90 310,140 C340,170 360,185 370,195 Z" fill="url(#gfill)"/><path d="M50,195 C90,190 110,180 130,120 C150,60 170,40 210,35 C250,40 280,90 310,140 C340,170 360,185 370,195" fill="none" stroke="var(--gold)" stroke-width="2.5"/><circle cx="210" cy="35" r="5" fill="var(--gold)"/><line x1="210" y1="40" x2="210" y2="200" stroke="var(--gold)" stroke-width="1" stroke-dasharray="3,3"/><text x="50" y="218" font-family="DM Sans" font-size="7" fill="var(--slate)">PRE-LAUNCH</text><text x="185" y="218" font-family="DM Sans" font-size="7" fill="var(--gold)" font-weight="600">LAUNCH DAY</text><text x="275" y="218" font-family="DM Sans" font-size="7" fill="var(--slate)">WEEK 1-2</text><text x="2" y="12" font-family="DM Sans" font-size="7" fill="var(--charcoal)" font-weight="600">BUYER INTEREST</text><text x="218" y="28" font-family="DM Sans" font-size="7.5" fill="var(--gold)" font-weight="600">PEAK DEMAND</text></svg></div><div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"><div class="crd reveal delay-2" style="text-align:center;padding:20px"><div style="font-family:var(--font-display);font-size:32pt;font-weight:300;color:var(--gold)">4×</div><div style="font-size:8pt;color:rgba(255,255,255,.7);margin-top:4px">More visits debut week vs. Week 4</div></div><div class="crd reveal delay-3" style="text-align:center;padding:20px"><div style="font-family:var(--font-display);font-size:32pt;font-weight:300;color:var(--gold)">85%</div><div style="font-size:8pt;color:rgba(255,255,255,.7);margin-top:4px">Of buyers find homes online first</div></div></div><div class="reveal delay-4" style="border-radius:6px;overflow:hidden;height:160px"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="ph-img" alt=""></div></div></div><span class="sig">Sez Sezer</span></div></div>
+
+<!-- ======== PAGE 10: VIDEO TOUR ======== -->
+<div class="page"><div class="split"><div class="sb sb-dark"><div class="ttl ttl-w reveal-left" style="font-size:20pt;letter-spacing:3px">LUXURY<br>WEBSITE</div><div class="desc reveal-left delay-1" style="font-family:var(--font-body);font-style:normal;font-size:8.5pt">We create a bespoke listing website — a hub and trackable landing page.</div><span class="sig sig-w">Sez Sezer</span></div><div class="ct"><div class="logo"><svg width="28" height="28" viewBox="0 0 100 100"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg><div><div class="logo-n">SEZ SEZER</div><div class="logo-s">carmelvalley.com</div></div></div><div class="pttl reveal">Property Video Tour</div><div class="div-g"></div><div class="reveal delay-1" style="margin-top:10px"><div class="yt-wrap"><iframe src="https://www.youtube.com/embed/9Mjtt8hxbyo?si=U1TXl0-7a6Y7o2lD" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe></div></div><div class="reveal delay-2" style="margin-top:12px;font-size:8.5pt;line-height:1.6">Step inside through a fully immersive digital showcase featuring professionally produced lifestyle video, 3D Matterport tour, and high-resolution photography.</div></div></div></div>
+
+<!-- ======== PAGE 11: DIGITAL MARKETING ======== -->
+<div class="page"><div class="split"><div class="sb sb-dark"><div class="ttl ttl-w reveal-left" style="font-size:18pt;letter-spacing:5px">DIGITAL<br><span style="font-weight:300">MARKETING</span></div><span class="sig sig-w">Sez Sezer</span></div><div class="ct"><div class="logo"><svg width="28" height="28" viewBox="0 0 100 100"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg><div><div class="logo-n">SEZ SEZER</div><div class="logo-s">carmelvalley.com</div></div></div><div style="text-align:center;margin-bottom:10px"><div class="lbl reveal" style="text-align:center;letter-spacing:6px">YOUTUBE VIDEO ADS — PROVEN RESULTS</div></div><div class="div-g"></div><div class="stat reveal delay-1"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="stat-thumb" alt=""><div class="stat-info"><h4>Luxurious Carmel Valley Home For...</h4><p>01:29 &middot; Sez Sezer</p></div><div class="stat-val"><div class="lab">Impressions</div><div class="num">207K</div></div></div><div class="stat reveal delay-2"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="stat-thumb" alt=""><div class="stat-info"><h4>4928 Harwick Place Exclusively List...</h4><p>01:52 &middot; Sez Sezer</p></div><div class="stat-val"><div class="lab">Impressions</div><div class="num">69.4K</div></div></div><div class="stat reveal delay-3"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="stat-thumb" alt=""><div class="stat-info"><h4>Inside a $2M Elegant &amp; Timeless H...</h4><p>02:22 &middot; Sez Sezer</p></div><div class="stat-val"><div class="lab">Impressions</div><div class="num">53.9K</div></div></div><div class="stat reveal delay-4"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="stat-thumb" alt=""><div class="stat-info"><h4>Luxurious Carmel Valley Home For...</h4><p>02:06 &middot; Sez Sezer</p></div><div class="stat-val"><div class="lab">Impressions</div><div class="num">29.4K</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"><div class="reveal delay-5" style="background:var(--navy);border-radius:8px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between"><div style="color:rgba(255,255,255,.7);font-size:8.5pt">4928 Harwick Place<br><span style="font-size:7pt;color:rgba(255,255,255,.4)">69.4K impressions</span></div><div style="text-align:right"><div style="font-size:7pt;letter-spacing:1px;text-transform:uppercase;color:var(--gold)">Ad views</div><div style="font-family:var(--font-display);font-size:30pt;font-weight:300;color:#fff;line-height:1">31.8K</div></div></div><div class="reveal delay-5" style="background:var(--navy);border-radius:8px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between"><div style="color:rgba(255,255,255,.7);font-size:8.5pt">Inside a $2M Elegant...<br><span style="font-size:7pt;color:rgba(255,255,255,.4)">53.9K impressions</span></div><div style="text-align:right"><div style="font-size:7pt;letter-spacing:1px;text-transform:uppercase;color:var(--gold)">Ad views</div><div style="font-family:var(--font-display);font-size:30pt;font-weight:300;color:#fff;line-height:1">22.6K</div></div></div></div></div></div></div>
+
+<!-- ======== PAGE 12: STAGING CHECKLIST ======== -->
+<div class="page"><div class="split"><div class="sb"><div class="ttl reveal-left" style="font-size:22pt">Home Seller<br>Checklist</div><div style="margin-top:14px;height:120px;border-radius:6px;overflow:hidden" class="reveal-left delay-1"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="ph-img" alt=""></div></div><div class="ct"><div style="display:grid;grid-template-columns:1fr 1fr;gap:24px"><div><div style="font-family:var(--font-display);font-size:15pt;margin-bottom:8px;display:flex;align-items:center;gap:8px" class="reveal"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>HOME EXTERIOR</div><div style="display:flex;flex-direction:column;gap:4px"><label class="chk reveal delay-1"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">House number easy to read</span></label><label class="chk reveal delay-1"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Lights on timers after sunset</span></label><label class="chk reveal delay-1"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Garage/carport clean and tidy</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Broken window panes replaced</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Doorbell &amp; hardware in good repair</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Trim paint touched up</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Lawn mowed, edged &amp; weeded</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Overgrown shrubbery cut back</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Seasonal flowers planted</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Roof inspected</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Fences mended &amp; painted</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">All windows washed</span></label></div></div><div><div style="font-family:var(--font-display);font-size:15pt;margin-bottom:8px;display:flex;align-items:center;gap:8px" class="reveal"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>HOME INTERIOR</div><div style="display:flex;flex-direction:column;gap:4px"><label class="chk reveal delay-1"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Lights on &amp; drapes open</span></label><label class="chk reveal delay-1"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Comfortable temperature</span></label><label class="chk reveal delay-1"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Fresh flowers in rooms</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Paint touched up</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Leaky taps repaired</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Light bulbs replaced</span></label><label class="chk reveal delay-2"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Squeaky doors oiled</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Fixtures polished</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Floors cleaned</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Closets neat</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Valuables locked away</span></label><label class="chk reveal delay-3"><input type="checkbox"><span class="chk-box"></span><span class="chk-txt">Countertops clean</span></label></div></div></div></div></div></div>
+
+<!-- ======== PAGE 13: OFFERS ======== -->
+<div class="page"><div class="split"><div class="sb"><div class="ttl reveal-left" style="font-size:22pt;letter-spacing:2px">ACCEPTING<br>OFFERS</div><div class="reveal-left delay-1" style="margin-top:16px;height:120px;border-radius:6px;overflow:hidden"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="ph-img" alt=""></div></div><div class="ct"><div class="reveal" style="font-size:9.5pt;font-weight:700;letter-spacing:1px;text-transform:uppercase">THE HIGHEST PRICED OFFER IS NOT ALWAYS THE BEST OFFER</div><div class="div-g"></div><div style="font-size:9pt;line-height:1.7;margin-top:8px" class="reveal delay-1"><p>Price is not always the determining factor. The initial offer is usually not final, and terms and conditions influence the final outcome.</p><div style="font-weight:700;letter-spacing:1px;margin:12px 0 4px">NEGOTIATING THE RIGHT WAY</div><p>I take the ethical responsibility of fairly negotiating contractual terms very seriously. It is my job to find a win-win agreement beneficial to all parties.</p></div><div style="margin-top:14px" class="reveal delay-2"><div class="c3"><div><div style="font-family:var(--font-display);font-size:13pt;margin-bottom:5px">3 Facts</div><ol style="padding-left:16px;font-size:8.2pt"><li>Strong positioning improves offer strength.</li><li>Clean terms matter as much as price.</li><li>Appraisals affect final proceeds.</li></ol></div><div><div style="font-family:var(--font-display);font-size:13pt;margin-bottom:5px">3 to Avoid</div><ol style="padding-left:16px;font-size:8.2pt"><li>Emotional concessions.</li><li>Unnecessary contingencies.</li><li>Appraisal-related price pressure.</li></ol></div><div><div style="font-family:var(--font-display);font-size:13pt;margin-bottom:5px">3 to Accomplish</div><ol style="padding-left:16px;font-size:8.2pt"><li>Secure strong terms.</li><li>Maintain pricing confidence.</li><li>Protect every dollar at closing.</li></ol></div></div></div></div></div></div>
+
+<!-- ======== PAGE 14: ESCROW ======== -->
+<div class="page"><div class="split"><div class="sb"><div class="ttl reveal-left" style="font-size:24pt;letter-spacing:2px">ESCROW<br>PROCESS</div></div><div class="ct" style="display:flex;flex-direction:column;justify-content:center"><div class="esc reveal delay-1"><div class="esc-n">1</div>Acceptance</div><div class="esc reveal delay-2"><div class="esc-n">2</div>Inspections</div><div class="esc reveal delay-3"><div class="esc-n">3</div>Contingencies</div><div class="esc reveal delay-4"><div class="esc-n">4</div>Close of Escrow</div><div class="reveal delay-5" style="margin-top:24px;height:140px;border-radius:6px;overflow:hidden"><img src="https://u.realgeeks.media/johnsaternow/Carmel_Valley_Real_Estate_Agent_92130.jpg" class="ph-img" alt=""></div></div></div></div>
+
+<!-- ======== PAGE 15: CLOSING ======== -->
+<div class="page"><div class="cover"><div class="cover-ring" style="width:340px;height:340px;top:-70px;right:-70px"></div><svg width="48" height="48" viewBox="0 0 100 100" class="reveal"><g class="logo-svg"><circle cx="50" cy="35" r="12"/><circle cx="35" cy="55" r="12"/><circle cx="65" cy="55" r="12"/><circle cx="50" cy="65" r="12"/></g></svg><div class="cover-est reveal delay-1">ESTABLISHED IN &nbsp;&nbsp; TWENTY FIFTEEN</div><div class="cover-name reveal delay-2">SEZ SEZER</div><div class="cover-sub reveal delay-3">CARMEL VALLEY &middot; RANCHO SANTA FE &middot; DEL MAR</div><div class="reveal delay-4" style="margin-top:36px"><div style="font-size:9pt;color:var(--slate);line-height:2">Sez Sezer &middot; Licensed Real Estate Salesperson<br>DRE #01988197<br>Keller Williams Realty &middot; carmelvalley.com</div></div></div></div>
+
+<script>
+// Scroll Reveal
+document.addEventListener('DOMContentLoaded',()=>{
+  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})},{threshold:.15,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal,.reveal-left,.reveal-right').forEach(el=>obs.observe(el));
+});
+
+// Property fields list
+const FIELDS=['address','price','type','community','beds','baths','sqft','lot','year','garage','lastsold','lastsoldprice','hoa','school','mello','features','desc'];
+
+// Apply fields to display page
+function applyToPresentation(){
+  const get=id=>(document.getElementById(id)||{}).value||'';
+  // Cover address
+  const ca=document.getElementById('cover-address');
+  if(ca)ca.textContent=get('pf-address');
+  // Display page
+  const map={
+    'disp-address':'pf-address','disp-community':'pf-community',
+    'disp-beds':'pf-beds','disp-baths':'pf-baths','disp-sqft':'pf-sqft',
+    'disp-price':'pf-price','disp-type':'pf-type','disp-lot':'pf-lot',
+    'disp-year':'pf-year','disp-garage':'pf-garage','disp-hoa':'pf-hoa',
+    'disp-lastsold':'pf-lastsold','disp-lastsoldprice':'pf-lastsoldprice',
+    'disp-school':'pf-school','disp-mello':'pf-mello','disp-features':'pf-features'
+  };
+  for(const[dispId,fieldId]of Object.entries(map)){
+    const el=document.getElementById(dispId);
+    const val=get(fieldId);
+    if(el){
+      el.textContent=val||'—';
+      if(val){el.style.color='var(--gold)';setTimeout(()=>el.style.color='',1200)}
+    }
+  }
+  // Scroll to display page
+  document.getElementById('disp-address')?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function clearFields(){
+  FIELDS.forEach(f=>{const el=document.getElementById('pf-'+f);if(el)el.value=''});
+  document.getElementById('lookup-status').innerHTML='';
+}
+
+// AI Property Lookup
+async function lookupProperty(){
+  const addr=document.getElementById('address-input').value.trim();
+  if(!addr){document.getElementById('lookup-status').innerHTML='<span class="error">Please enter a property address first.</span>';return}
+  const btn=document.getElementById('lookup-btn');
+  const btnText=document.getElementById('btn-text');
+  btn.disabled=true;
+  btnText.textContent='⏳ Searching...';
+  document.getElementById('lookup-status').innerHTML='Searching property records for: <strong>'+addr+'</strong>';
+  document.getElementById('pf-address').value=addr;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        messages:[{role:'user',content:'Look up the property at: '+addr+'\n\nReturn ONLY a JSON object (no markdown, no backticks, no explanation) with these fields:\n{"price":"","type":"","beds":"","baths":"","sqft":"","lot":"","year":"","garage":"","lastsold":"","lastsoldprice":"","hoa":"","community":"","school":"","mello":"","desc":"","features":""}\nUse empty string for unknown fields.'}]
+      })
+    });
+    const data=await resp.json();
+    let text='';
+    if(data.content)for(const b of data.content)if(b.type==='text'&&b.text)text+=b.text;
+    const m=text.replace(/```json|```/g,'').trim().match(/\{[\s\S]*\}/);
+    if(m){
+      const p=JSON.parse(m[0]);
+      FIELDS.forEach(f=>{
+        const el=document.getElementById('pf-'+f);
+        if(el&&p[f]){el.value=p[f];el.classList.add('filled');setTimeout(()=>el.classList.remove('filled'),2000)}
+      });
+      document.getElementById('lookup-status').innerHTML='<span class="success">✓ Found! Review the details below, edit anything, then click <strong>Apply to Presentation</strong>.</span>';
+    }else{
+      document.getElementById('lookup-status').innerHTML='<span class="error">Could not parse results. Please fill in details manually below.</span>';
+    }
+  }catch(err){
+    console.error(err);
+    document.getElementById('lookup-status').innerHTML='<span class="error">Lookup unavailable — please type the details manually below.</span>';
+  }
+  btn.disabled=false;
+  btnText.textContent='🔍 Look Up Property';
+}
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 'use client'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Home, MessageSquare, User, Handshake, Calculator, DollarSign, Percent, BarChart2, Heart, Search, Calendar, Users, UserCircle, Globe, LayoutDashboard } from 'lucide-react'
+import { Home, MessageSquare, User, Handshake, Calculator, DollarSign, Percent, BarChart2, Heart, Search, Calendar, Users, UserCircle, Globe, LayoutDashboard, FileText } from 'lucide-react'
 
 const HOMEOWNER_TABS = [
   { href: '/dashboard/homeowner',            label: 'Dashboard',     icon: LayoutDashboard },
@@ -15,10 +15,11 @@ const HOMEOWNER_TABS = [
 ]
 
 const AGENT_TABS = [
-  { href: '/dashboard/agent',               label: 'Dashboard',     icon: LayoutDashboard },
-  { href: '/dashboard/agent/clients',       label: 'Clients',       icon: Users },
-  { href: '/dashboard/agent/messages',      label: 'Messages',      icon: MessageSquare },
-  { href: '/dashboard/profile',             label: 'Profile',       icon: UserCircle },
+  { href: '/dashboard/agent',                          label: 'Dashboard',     icon: LayoutDashboard },
+  { href: '/dashboard/agent/clients',                  label: 'Clients',       icon: Users },
+  { href: '/dashboard/agent/messages',                 label: 'Messages',      icon: MessageSquare },
+  { href: '/dashboard/agent/listing-presentation',     label: 'Listing Presentation', icon: FileText },
+  { href: '/dashboard/profile',                        label: 'Profile',       icon: UserCircle },
 ]
 
 const LENDER_TABS = [
