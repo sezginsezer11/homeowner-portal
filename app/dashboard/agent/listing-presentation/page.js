@@ -23,6 +23,18 @@ export default function ListingPresentationPage() {
   const [error, setError]       = useState('')
   const fileRef = useRef()
 
+  const saveToStorage = (compsData, subjectData) => {
+    try {
+      localStorage.setItem('cma_comps', JSON.stringify(compsData))
+      localStorage.setItem('cma_subject', JSON.stringify(subjectData))
+    } catch(e) { console.error('localStorage error:', e) }
+  }
+
+  const openPresentation = () => {
+    if (rows.length > 0) saveToStorage(rows, subject)
+    window.open('/listing-presentation.html', '_blank')
+  }
+
   const handleUpload = (e) => {
     const file = e.target.files[0]
     if (!file) return
@@ -39,6 +51,13 @@ export default function ListingPresentationPage() {
         const comps = data.filter(r => r['MLS #'] !== 'Subject Property' && r['MLS #'])
         setSubject(subj || null)
         setRows(comps)
+        // Auto-save to localStorage for presentation
+        if (comps.length) {
+          try {
+            localStorage.setItem('cma_comps', JSON.stringify(comps))
+            localStorage.setItem('cma_subject', JSON.stringify(subj || null))
+          } catch(e) {}
+        }
       },
       error: (err) => setError('Could not parse file: ' + err.message)
     })
@@ -78,7 +97,7 @@ export default function ListingPresentationPage() {
             <p className="text-[#65676b] text-sm mt-1">Upload your MLS comps CSV, then open the interactive presentation.</p>
           </div>
           <div className="flex gap-3 flex-wrap">
-            <a href="/listing-presentation.html" target="_blank"
+            <a href="#" onClick={(e) => { e.preventDefault(); openPresentation() }}
               className="flex items-center gap-2 px-5 py-2.5 bg-[#1a1a2e] hover:bg-[#344a57] text-white font-bold text-sm rounded-xl transition-colors">
               <ExternalLink className="w-4 h-4"/> Open Presentation
             </a>
@@ -280,7 +299,7 @@ export default function ListingPresentationPage() {
             )}
 
             {/* Launch button */}
-            <a href="/listing-presentation.html" target="_blank"
+            <a href="#" onClick={(e) => { e.preventDefault(); openPresentation() }}
               className="flex items-center justify-center gap-3 w-full py-4 bg-gradient-to-r from-[#1a1a2e] to-[#344a57] text-white font-bold rounded-2xl hover:opacity-90 transition-opacity text-sm shadow-lg">
               <FileText className="w-5 h-5"/>
               Open Full Presentation
