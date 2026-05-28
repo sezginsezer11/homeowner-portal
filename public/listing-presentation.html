@@ -446,6 +446,37 @@ async function lookupProperty(){
     var comps = JSON.parse(raw);
     var subject = subjectRaw ? JSON.parse(subjectRaw) : null;
 
+    // ── Auto-populate subject property fields from CSV ──
+    if (subject) {
+      var fieldMap = {
+        'pf-address':        subject['Address'] || '',
+        'pf-price':          subject['Current Price'] || subject['OrigListPr'] || '',
+        'pf-beds':           subject['Beds Total'] || '',
+        'pf-baths':          subject['Baths Total'] || '',
+        'pf-sqft':           subject['LivingArea'] || '',
+        'pf-lot':            subject['Lot Size Sqft'] || '',
+        'pf-year':           subject['Year Built'] || '',
+      };
+      Object.keys(fieldMap).forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && fieldMap[id]) {
+          el.value = String(fieldMap[id]).trim();
+          el.classList.add('filled');
+          setTimeout(function(){ el.classList.remove('filled'); }, 2000);
+        }
+      });
+      // Also set the search bar address
+      var addrInput = document.getElementById('address-input');
+      if (addrInput && subject['Address']) addrInput.value = String(subject['Address']).trim();
+      // Auto-apply to presentation displays
+      if (typeof applyToPresentation === 'function') {
+        setTimeout(function(){ applyToPresentation(); }, 300);
+      }
+      // Show status message
+      var statusEl = document.getElementById('lookup-status');
+      if (statusEl) statusEl.innerHTML = '<span class="success">✓ Subject property loaded from your CMA upload — review and edit any fields below.</span>';
+    }
+
     if (!comps || !comps.length) return;
 
     // Update subtitle with subject address
