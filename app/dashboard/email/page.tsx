@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 async function getCounts(userId: string) {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const [contacts, tags, templates, domains, campaigns] = await Promise.all([
     supabase.from('email_contacts').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     supabase.from('email_tags').select('*', { count: 'exact', head: true }).eq('user_id', userId),
@@ -24,7 +24,7 @@ async function getCounts(userId: string) {
 }
 
 export default async function EmailHubPage() {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
   const counts = await getCounts(user.id);

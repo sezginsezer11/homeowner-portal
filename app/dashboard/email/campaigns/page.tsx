@@ -6,7 +6,7 @@ import { getEmailSupabase } from '@/lib/email/supabase-server';
 export const dynamic = 'force-dynamic';
 
 export default async function CampaignsPage() {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
 

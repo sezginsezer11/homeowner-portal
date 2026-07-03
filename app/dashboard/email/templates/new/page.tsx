@@ -6,7 +6,7 @@ import TemplateEditor from '@/components/email/TemplateEditor';
 export const dynamic = 'force-dynamic';
 
 export default async function NewTemplatePage() {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
   return <TemplateEditor />;

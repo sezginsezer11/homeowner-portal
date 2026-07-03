@@ -4,7 +4,7 @@ import { getEmailSupabase } from '@/lib/email/supabase-server';
 
 // GET /api/email/tags  — returns tags with contact counts
 export async function GET() {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
@@ -33,7 +33,7 @@ export async function GET() {
 
 // POST /api/email/tags  { name, color?, description? }
 export async function POST(req: Request) {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 

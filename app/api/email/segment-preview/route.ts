@@ -4,7 +4,7 @@ import { getEmailSupabase, getEmailServiceClient } from '@/lib/email/supabase-se
 import { resolveSegment } from '@/lib/email/segment';
 
 export async function POST(req: Request) {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 

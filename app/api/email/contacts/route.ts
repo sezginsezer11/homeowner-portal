@@ -5,7 +5,7 @@ import type { ContactStatus } from '@/lib/email/types';
 
 // GET /api/email/contacts?search=&tag=&status=&page=1&page_size=50
 export async function GET(req: Request) {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
@@ -51,7 +51,7 @@ export async function GET(req: Request) {
 
 // POST /api/email/contacts
 export async function POST(req: Request) {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
 
 // DELETE /api/email/contacts  (body: { ids: string[] })  — bulk
 export async function DELETE(req: Request) {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 

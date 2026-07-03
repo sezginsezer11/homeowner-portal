@@ -6,7 +6,7 @@ import DomainsManager from '@/components/email/DomainsManager';
 export const dynamic = 'force-dynamic';
 
 export default async function DomainsPage() {
-  const supabase = getEmailSupabase();
+  const supabase = await getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/login');
   return <DomainsManager />;

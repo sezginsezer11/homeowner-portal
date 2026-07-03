@@ -1,15 +1,13 @@
 // lib/email/supabase-server.ts
-// Server-side Supabase client for the email module API routes.
-// Adjust the import path if your project structure differs.
-
-import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 
-export function getEmailSupabase() {
-  const cookieStore = cookies();
+export async function getEmailSupabase() {
+  const cookieStore = await cookies();
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string,
     {
       cookies: {
         get(name: string) { return cookieStore.get(name)?.value; },
@@ -20,14 +18,10 @@ export function getEmailSupabase() {
   );
 }
 
-// Service-role client for trusted server tasks (tracking endpoints, send pipeline).
-// NEVER expose service role to the browser.
-import { createClient } from '@supabase/supabase-js';
-
 export function getEmailServiceClient() {
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL as string,
+    process.env.SUPABASE_SERVICE_ROLE_KEY as string,
     { auth: { persistSession: false } }
   );
 }
