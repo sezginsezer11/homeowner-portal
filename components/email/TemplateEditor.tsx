@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { DEFAULT_DESIGN, newBlock } from '@/lib/email/blocks';
@@ -244,7 +245,7 @@ function BlockList({ blocks, selected, onSelect, onMove, onRemove, design }: {
 function BlockPreview({ b, design, selected, onSelect, onMove, onRemove }: any) {
   switch (b.type) {
     case 'heading': {
-      const Tag = (`h${b.level}`) as keyof JSX.IntrinsicElements;
+      const Tag = (`h${b.level}`) as keyof React.JSX.IntrinsicElements;
       const size = b.level === 1 ? 28 : b.level === 2 ? 22 : 18;
       return <Tag style={{ textAlign: b.align, color: b.color, fontFamily: b.fontFamily === 'serif' ? 'Georgia, serif' : 'system-ui, sans-serif', fontSize: size, margin: '8px 0', fontWeight: 'bold' }}>{b.text}</Tag>;
     }
