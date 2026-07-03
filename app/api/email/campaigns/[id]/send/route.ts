@@ -11,7 +11,8 @@ import { sendOne } from '@/lib/email/sender';
 const BATCH_LIMIT = 250;       // max recipients dispatched in one request
 const PER_MESSAGE_DELAY_MS = 100; // ~10/sec — stay under SES default rate
 
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -20,7 +21,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
 
   const { data: campaign, error } = await supabase
     .from('email_campaigns').select('*')
-    .eq('user_id', user.id).eq('id', params.id).single();
+    .eq('user_id', user.id).eq('id', id).single();
   if (error || !campaign) return NextResponse.json({ error: 'not found' }, { status: 404 });
   if (campaign.status !== 'draft' && campaign.status !== 'paused') {
     return NextResponse.json({ error: `cannot send a '${campaign.status}' campaign` }, { status: 400 });

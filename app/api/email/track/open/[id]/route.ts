@@ -9,9 +9,10 @@ const GIF = Buffer.from(
   'base64'
 );
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // Strip .gif suffix if present
-  const trackingId = params.id.replace(/\.gif$/i, '');
+  const trackingId = id.replace(/\.gif$/i, '');
 
   const service = getEmailServiceClient();
   const { data: rec } = await service

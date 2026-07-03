@@ -6,7 +6,8 @@ import { sesSendEmail } from '@/lib/email/ses-client';
 import { pickDomain } from '@/lib/email/domain-router';
 import { renderTemplate, renderSubject } from '@/lib/email/template-render';
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -18,7 +19,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const { data: campaign, error } = await supabase
     .from('email_campaigns').select('*')
-    .eq('user_id', user.id).eq('id', params.id).single();
+    .eq('user_id', user.id).eq('id', id).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
 
   const picked = await pickDomain({

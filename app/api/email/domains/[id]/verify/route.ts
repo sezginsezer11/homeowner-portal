@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server';
 import { getEmailSupabase } from '@/lib/email/supabase-server';
 import { sesGetIdentity } from '@/lib/email/ses-client';
 
-export async function POST(_req: Request, { params }: { params: { id: string } }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -13,14 +14,14 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
     .from('email_sending_domains')
     .select('*')
     .eq('user_id', user.id)
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
   if (!row) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
   const ses = await sesGetIdentity(row.domain, row.region);
   if (!ses) {
     await supabase.from('email_sending_domains').update({ status: 'failed' })
-      .eq('id', params.id);
+      .eq('id', id);
     return NextResponse.json({ error: 'identity not found in SES' }, { status: 404 });
   }
 
@@ -43,7 +44,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
       dkim_tokens: ses.dkimTokens.length ? ses.dkimTokens : row.dkim_tokens,
       last_checked_at: new Date().toISOString(),
     })
-    .eq('id', params.id)
+    .eq('id', id)
     .select()
     .single();
 

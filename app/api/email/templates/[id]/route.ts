@@ -3,7 +3,8 @@ import { NextResponse } from 'next/server';
 import { getEmailSupabase } from '@/lib/email/supabase-server';
 import { renderDesignToHtml } from '@/lib/email/render-blocks';
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -11,12 +12,13 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   const { data, error } = await supabase
     .from('email_templates')
     .select('*')
-    .eq('user_id', user.id).eq('id', params.id).single();
+    .eq('user_id', user.id).eq('id', id).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 404 });
   return NextResponse.json({ template: data });
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -37,14 +39,15 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   const { data, error } = await supabase
     .from('email_templates')
     .update(patch)
-    .eq('user_id', user.id).eq('id', params.id)
+    .eq('user_id', user.id).eq('id', id)
     .select().single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   return NextResponse.json({ template: data });
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = getEmailSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -52,7 +55,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   const { error } = await supabase
     .from('email_templates')
     .delete()
-    .eq('user_id', user.id).eq('id', params.id);
+    .eq('user_id', user.id).eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ deleted: true });
 }
