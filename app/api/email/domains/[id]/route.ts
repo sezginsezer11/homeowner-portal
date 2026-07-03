@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { getEmailSupabase } from '@/lib/email/supabase-server';
 import { sesDeleteDomainIdentity } from '@/lib/email/ses-client';
-import { buildDnsInstructions } from '../route';
+import { buildDnsInstructions } from '@/lib/email/dns';
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
