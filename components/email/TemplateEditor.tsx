@@ -5,19 +5,29 @@ import { useEffect, useMemo, useState } from 'react';
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import {
+  ArrowLeft, Eye, Save, Check, X, Palette, LayoutGrid,
+  Heading, Pilcrow, Image as ImageIcon, MousePointerClick, Minus, MoveVertical, Columns, Code2,
+  GripVertical, ChevronUp, ChevronDown, Copy, Trash2, LayoutPanelLeft,
+  Monitor, Smartphone, Send, Loader2, Eraser,
+} from 'lucide-react';
 import { DEFAULT_DESIGN, newBlock } from '@/lib/email/blocks';
 import type { Block, Design, BlockAlign } from '@/lib/email/blocks';
 
-const PALETTE: { type: Block['type']; label: string; icon: string }[] = [
-  { type: 'heading',   label: 'Heading',   icon: 'H' },
-  { type: 'paragraph', label: 'Paragraph', icon: '¶' },
-  { type: 'image',     label: 'Image',     icon: '▣' },
-  { type: 'button',    label: 'Button',    icon: '⬚' },
-  { type: 'divider',   label: 'Divider',   icon: '—' },
-  { type: 'spacer',    label: 'Spacer',    icon: '↕' },
-  { type: 'columns',   label: '2 columns', icon: '▥' },
-  { type: 'html',      label: 'HTML',      icon: '<>' },
-];
+type IconType = React.ComponentType<{ className?: string; strokeWidth?: number }>;
+
+const BLOCK_META: Record<Block['type'], { label: string; icon: IconType; bg: string; fg: string }> = {
+  heading:   { label: 'Heading',    icon: Heading,           bg: 'bg-blue-50 group-hover:bg-blue-100',        fg: 'text-blue-600' },
+  paragraph: { label: 'Paragraph',  icon: Pilcrow,           bg: 'bg-slate-100 group-hover:bg-slate-200',     fg: 'text-slate-600' },
+  image:     { label: 'Image',      icon: ImageIcon,         bg: 'bg-purple-50 group-hover:bg-purple-100',    fg: 'text-purple-600' },
+  button:    { label: 'Button',     icon: MousePointerClick, bg: 'bg-emerald-50 group-hover:bg-emerald-100',  fg: 'text-emerald-600' },
+  divider:   { label: 'Divider',    icon: Minus,             bg: 'bg-neutral-100 group-hover:bg-neutral-200', fg: 'text-neutral-600' },
+  spacer:    { label: 'Spacer',     icon: MoveVertical,      bg: 'bg-neutral-100 group-hover:bg-neutral-200', fg: 'text-neutral-600' },
+  columns:   { label: '2 columns',  icon: Columns,           bg: 'bg-amber-50 group-hover:bg-amber-100',      fg: 'text-amber-600' },
+  html:      { label: 'HTML',       icon: Code2,             bg: 'bg-rose-50 group-hover:bg-rose-100',        fg: 'text-rose-600' },
+};
+
+const PALETTE: Block['type'][] = ['heading', 'paragraph', 'image', 'button', 'divider', 'spacer', 'columns', 'html'];
 
 export default function TemplateEditor({ templateId }: { templateId?: string }) {
   const router = useRouter();
@@ -30,6 +40,13 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
   const [msg, setMsg] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [showPreview, setShowPreview] = useState(false);
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [sidebarTab, setSidebarTab] = useState<'blocks' | 'style'>('blocks');
+  const [showSaveAs, setShowSaveAs] = useState(false);
+  const [savingAs, setSavingAs] = useState(false);
+  const [showSendTest, setShowSendTest] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testMsg, setTestMsg] = useState<string | null>(null);
 
   // Load existing template
   useEffect(() => {
@@ -44,33 +61,86 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
     });
   }, [templateId]);
 
-  // Refresh server-rendered preview when "Preview" opens
-  const refreshPreview = async () => {
-    const r = await fetch('/api/email/templates' + (templateId ? `/${templateId}` : ''), {
-      method: templateId ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, subject, preheader, design }),
-    });
-    const j = await r.json();
-    if (j.template) {
-      setPreviewHtml(j.template.html_body || '');
-      if (!templateId && j.template.id) router.replace(`/dashboard/email/templates/${j.template.id}`);
-    }
-  };
+  // Auto-dismiss the save confirmation
+  useEffect(() => {
+    if (!msg) return;
+    const t = setTimeout(() => setMsg(null), 2500);
+    return () => clearTimeout(t);
+  }, [msg]);
 
-  const save = async () => {
-    setSaving(true); setMsg(null);
-    const url = templateId ? `/api/email/templates/${templateId}` : '/api/email/templates';
+  // Persists the current draft (creating the template on first save) and
+  // returns the saved row. Shared by Preview, Save, and Send test email.
+  const persist = async () => {
+    const url = '/api/email/templates' + (templateId ? `/${templateId}` : '');
     const method = templateId ? 'PATCH' : 'POST';
     const r = await fetch(url, {
       method, headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, subject, preheader, design }),
     });
     const j = await r.json();
-    setSaving(false);
-    if (!r.ok) { setMsg(j.error || 'Save failed'); return; }
-    setMsg('Saved');
+    if (!r.ok) throw new Error(j.error || 'Save failed');
     if (!templateId && j.template?.id) router.replace(`/dashboard/email/templates/${j.template.id}`);
+    return j.template;
+  };
+
+  // Refresh server-rendered preview when "Preview" opens
+  const refreshPreview = async () => {
+    const template = await persist();
+    setPreviewHtml(template.html_body || '');
+  };
+
+  const save = async () => {
+    setSaving(true); setMsg(null);
+    try {
+      await persist();
+      setMsg('Saved');
+    } catch (e: any) {
+      setMsg(e.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveAs = async (newName: string) => {
+    setSavingAs(true);
+    try {
+      const r = await fetch('/api/email/templates', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName, subject, preheader, design }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Save failed');
+      setName(newName);
+      setShowSaveAs(false);
+      router.push(`/dashboard/email/templates/${j.template.id}`);
+    } finally {
+      setSavingAs(false);
+    }
+  };
+
+  const clearTemplate = () => {
+    if (design.blocks.length === 0) return;
+    if (!window.confirm('Remove all blocks from this template? This cannot be undone.')) return;
+    setDesign({ ...design, blocks: [] });
+    setSelected(null);
+  };
+
+  const sendTest = async (to: string) => {
+    setSendingTest(true); setTestMsg(null);
+    try {
+      const template = await persist();
+      const r = await fetch(`/api/email/templates/${template.id}/test`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Send failed');
+      setTestMsg(`Sent! Check ${to}`);
+    } catch (e: any) {
+      setTestMsg(e.message || 'Send failed');
+    } finally {
+      setSendingTest(false);
+    }
   };
 
   const selectedBlock = useMemo<Block | null>(() => {
@@ -87,6 +157,8 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
     };
     return find(design.blocks);
   }, [selected, design]);
+
+  const selectedMeta = selectedBlock ? BLOCK_META[selectedBlock.type] : null;
 
   const updateBlock = (id: string, patch: Partial<Block>) => {
     const walk = (blocks: Block[]): Block[] =>
@@ -129,22 +201,86 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
     setDesign({ ...design, blocks: walk(design.blocks) });
   };
 
+  const cloneBlock = (b: Block): Block => {
+    const id = 'b' + Math.random().toString(36).slice(2, 9);
+    return b.type === 'columns'
+      ? { ...b, id, left: b.left.map(cloneBlock), right: b.right.map(cloneBlock) }
+      : { ...b, id };
+  };
+
+  const duplicateBlock = (id: string) => {
+    const walk = (blocks: Block[]): Block[] => {
+      const idx = blocks.findIndex(b => b.id === id);
+      if (idx >= 0) {
+        const next = [...blocks];
+        next.splice(idx + 1, 0, cloneBlock(next[idx]));
+        return next;
+      }
+      return blocks.map(b => b.type === 'columns' ? ({ ...b, left: walk(b.left), right: walk(b.right) }) : b);
+    };
+    setDesign({ ...design, blocks: walk(design.blocks) });
+  };
+
+  // Drag-and-drop reordering: removes the dragged block wherever it lives in the
+  // tree, then re-inserts it just before the drop target.
+  const reorderBlock = (draggedId: string, targetId: string) => {
+    if (draggedId === targetId) return;
+    let dragged: Block | null = null;
+    const remove = (blocks: Block[]): Block[] =>
+      blocks.reduce<Block[]>((acc, b) => {
+        if (b.id === draggedId) { dragged = b; return acc; }
+        if (b.type === 'columns') return [...acc, { ...b, left: remove(b.left), right: remove(b.right) }];
+        return [...acc, b];
+      }, []);
+    const without = remove(design.blocks);
+    if (!dragged) return;
+    const insert = (blocks: Block[]): Block[] =>
+      blocks.reduce<Block[]>((acc, b) => {
+        if (b.id === targetId) return [...acc, dragged as Block, b];
+        if (b.type === 'columns') return [...acc, { ...b, left: insert(b.left), right: insert(b.right) }];
+        return [...acc, b];
+      }, []);
+    setDesign({ ...design, blocks: insert(without) });
+  };
+
   return (
-    <div className="min-h-screen bg-neutral-100">
+    <div className="min-h-screen bg-neutral-50">
       {/* Top toolbar */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-3 flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-white border-b border-neutral-200 px-6 py-3 flex items-center justify-between flex-wrap gap-3 sticky top-0 z-20">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard/email/templates" className="text-xs uppercase tracking-wider text-neutral-500 hover:text-[#344a57]">← Templates</Link>
+          <Link href="/dashboard/email/templates" className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-neutral-500 hover:text-[#344a57] transition-colors">
+            <ArrowLeft className="w-3.5 h-3.5" /> Templates
+          </Link>
+          <div className="w-px h-5 bg-neutral-200" />
           <input value={name} onChange={e => setName(e.target.value)}
-            className="px-2 py-1 border border-transparent hover:border-neutral-300 rounded font-serif text-lg text-[#344a57] focus:outline-none focus:border-[#344a57]" />
+            className="px-2 py-1 border border-transparent hover:border-neutral-300 rounded-lg font-serif text-lg text-[#344a57] focus:outline-none focus:border-[#344a57] focus:ring-2 focus:ring-[#344a57]/10 transition-colors" />
         </div>
-        <div className="flex items-center gap-2">
-          {msg && <span className="text-xs text-neutral-600">{msg}</span>}
+        <div className="flex items-center gap-2 flex-wrap">
+          {msg && (
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+              <Check className="w-3.5 h-3.5" /> {msg}
+            </span>
+          )}
+          <button title="Remove all blocks" onClick={clearTemplate}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-neutral-500 rounded-lg hover:bg-neutral-100 hover:text-red-600 transition-colors">
+            <Eraser className="w-4 h-4" /> Clear
+          </button>
+          <div className="w-px h-5 bg-neutral-200" />
+          <button onClick={() => { setShowSendTest(true); setTestMsg(null); }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
+            <Send className="w-4 h-4" /> Send test
+          </button>
           <button onClick={() => { refreshPreview(); setShowPreview(true); }}
-            className="px-3 py-1.5 text-sm border border-neutral-300 rounded hover:bg-neutral-50">Preview</button>
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
+            <Eye className="w-4 h-4" /> Preview
+          </button>
+          <button onClick={() => setShowSaveAs(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
+            <Copy className="w-4 h-4" /> Save as
+          </button>
           <button onClick={save} disabled={saving}
-            className="px-4 py-1.5 text-sm bg-[#344a57] text-white rounded hover:bg-[#2a3c47] disabled:opacity-50">
-            {saving ? 'Saving…' : 'Save'}
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium bg-[#344a57] text-white rounded-lg hover:bg-[#2a3c47] disabled:opacity-50 transition-colors shadow-sm">
+            <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
       </div>
@@ -152,62 +288,133 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
       {/* Subject / preheader bar */}
       <div className="bg-white border-b border-neutral-200 px-6 py-3 grid grid-cols-1 md:grid-cols-2 gap-3">
         <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Subject line (supports {{first_name}})"
-          className="px-3 py-2 border border-neutral-300 rounded text-sm" />
+          className="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
         <input value={preheader} onChange={e => setPreheader(e.target.value)} placeholder="Preheader (preview text shown next to subject)"
-          className="px-3 py-2 border border-neutral-300 rounded text-sm" />
+          className="px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
       </div>
 
       {/* Main 3-column layout */}
       <div className="grid grid-cols-12 gap-4 p-4">
         {/* Block library */}
-        <aside className="col-span-12 md:col-span-2">
-          <div className="bg-white border border-neutral-200 rounded p-3 sticky top-4">
-            <h3 className="text-xs uppercase tracking-wider text-neutral-500 mb-2">Add block</h3>
-            <div className="space-y-1">
-              {PALETTE.map(p => (
-                <button key={p.type} onClick={() => addBlock(p.type)}
-                  className="w-full text-left px-3 py-2 text-sm rounded hover:bg-neutral-50 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded bg-neutral-100 inline-flex items-center justify-center text-xs font-mono">{p.icon}</span>
-                  {p.label}
-                </button>
-              ))}
+        <aside className="col-span-12 md:col-span-3">
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-card p-3 sticky top-20">
+            <div className="flex gap-1 p-1 bg-neutral-100 rounded-lg mb-3">
+              <button onClick={() => setSidebarTab('blocks')}
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${sidebarTab === 'blocks' ? 'bg-white shadow-sm text-[#344a57]' : 'text-neutral-500 hover:text-neutral-700'}`}>
+                <LayoutGrid className="w-3.5 h-3.5" /> Content
+              </button>
+              <button onClick={() => setSidebarTab('style')}
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${sidebarTab === 'style' ? 'bg-white shadow-sm text-[#344a57]' : 'text-neutral-500 hover:text-neutral-700'}`}>
+                <Palette className="w-3.5 h-3.5" /> Style
+              </button>
             </div>
-            <h3 className="text-xs uppercase tracking-wider text-neutral-500 mt-4 mb-2">Page style</h3>
-            <GlobalStyleEditor design={design} onChange={setDesign} />
+
+            {sidebarTab === 'blocks' ? (
+              <div className="grid grid-cols-2 gap-2">
+                {PALETTE.map(type => {
+                  const meta = BLOCK_META[type];
+                  const Icon = meta.icon;
+                  return (
+                    <button key={type} onClick={() => addBlock(type)}
+                      className="flex flex-col items-center justify-center gap-2 px-2 py-4 rounded-xl border border-neutral-200 hover:border-neutral-300 hover:shadow-card bg-white transition-all group text-center">
+                      <span className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${meta.bg}`}>
+                        <Icon className={`w-5 h-5 ${meta.fg}`} strokeWidth={2} />
+                      </span>
+                      <span className="text-xs font-medium text-neutral-600 leading-tight">{meta.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <GlobalStyleEditor design={design} onChange={setDesign} />
+            )}
           </div>
         </aside>
 
         {/* Canvas */}
-        <main className="col-span-12 md:col-span-7" onClick={() => setSelected(null)}>
-          <div className="rounded shadow-sm overflow-hidden mx-auto" style={{ maxWidth: design.globalStyle.contentWidth + 80, backgroundColor: design.globalStyle.bgColor, padding: 40 }}>
-            <div style={{ backgroundColor: design.globalStyle.contentBgColor, maxWidth: design.globalStyle.contentWidth, margin: '0 auto', padding: 40 }}>
-              <BlockList blocks={design.blocks} selected={selected} onSelect={setSelected} onMove={moveBlock} onRemove={removeBlock} design={design} />
-              {design.blocks.length === 0 && (
-                <div className="text-center text-neutral-400 py-8 text-sm">Click any block in the left panel to add it.</div>
-              )}
+        <main className="col-span-12 md:col-span-6">
+          <div className="flex items-center gap-1 mb-3">
+            <button title="Desktop preview" onClick={() => setDevice('desktop')}
+              className={`p-2 rounded-lg border transition-colors ${device === 'desktop' ? 'bg-[#344a57] border-[#344a57] text-white' : 'border-neutral-300 text-neutral-500 hover:bg-neutral-50'}`}>
+              <Monitor className="w-4 h-4" />
+            </button>
+            <button title="Mobile preview" onClick={() => setDevice('mobile')}
+              className={`p-2 rounded-lg border transition-colors ${device === 'mobile' ? 'bg-[#344a57] border-[#344a57] text-white' : 'border-neutral-300 text-neutral-500 hover:bg-neutral-50'}`}>
+              <Smartphone className="w-4 h-4" />
+            </button>
+          </div>
+          <div
+            className="rounded-xl border border-neutral-200 p-8"
+            style={{ backgroundImage: 'radial-gradient(circle, #e2e2e2 1px, transparent 1px)', backgroundSize: '16px 16px', backgroundColor: '#f4f4f5' }}
+            onClick={() => setSelected(null)}
+          >
+            <div
+              className="rounded-lg shadow-card overflow-hidden mx-auto transition-[max-width] duration-200"
+              style={{
+                maxWidth: device === 'mobile' ? 400 : design.globalStyle.contentWidth + 80,
+                backgroundColor: design.globalStyle.bgColor,
+                padding: device === 'mobile' ? 16 : 40,
+              }}
+            >
+              <div style={{ backgroundColor: design.globalStyle.contentBgColor, maxWidth: design.globalStyle.contentWidth, margin: '0 auto', padding: device === 'mobile' ? 20 : 40 }}>
+                <BlockList blocks={design.blocks} selected={selected} onSelect={setSelected} onMove={moveBlock} onRemove={removeBlock} onDuplicate={duplicateBlock} onReorder={reorderBlock} design={design} />
+                {design.blocks.length === 0 && (
+                  <div className="flex flex-col items-center justify-center text-center gap-2 py-16">
+                    <LayoutPanelLeft className="w-7 h-7 text-neutral-300" />
+                    <p className="text-sm text-neutral-400">Click a block on the left to start building your email.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </main>
 
         {/* Properties */}
         <aside className="col-span-12 md:col-span-3">
-          <div className="bg-white border border-neutral-200 rounded p-3 sticky top-4">
-            <h3 className="text-xs uppercase tracking-wider text-neutral-500 mb-2">
-              {selectedBlock ? `${selectedBlock.type} properties` : 'Properties'}
+          <div className="bg-white border border-neutral-200 rounded-xl shadow-card p-3 sticky top-20">
+            <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-3 px-1">
+              {selectedBlock && selectedMeta ? (
+                <>
+                  <selectedMeta.icon className={`w-3.5 h-3.5 ${selectedMeta.fg}`} />
+                  {selectedMeta.label} properties
+                </>
+              ) : 'Properties'}
             </h3>
             {selectedBlock
               ? <PropsPanel block={selectedBlock} onChange={patch => updateBlock(selectedBlock.id, patch)} />
-              : <p className="text-xs text-neutral-500">Select a block to edit its properties.</p>}
+              : <p className="text-xs text-neutral-500 px-1">Select a block on the canvas to edit its properties.</p>}
           </div>
         </aside>
       </div>
 
+      {showSaveAs && (
+        <SaveAsModal
+          initialName={`${name} (Copy)`}
+          saving={savingAs}
+          onClose={() => setShowSaveAs(false)}
+          onSave={saveAs}
+        />
+      )}
+
+      {showSendTest && (
+        <SendTestModal
+          sending={sendingTest}
+          message={testMsg}
+          onClose={() => setShowSendTest(false)}
+          onSend={sendTest}
+        />
+      )}
+
       {showPreview && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setShowPreview(false)}>
-          <div className="bg-white rounded-lg w-full max-w-3xl h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-xl w-full max-w-3xl h-[85vh] flex flex-col shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
-              <h2 className="font-serif text-xl text-[#344a57]">Email preview</h2>
-              <button onClick={() => setShowPreview(false)} className="text-neutral-500 hover:text-neutral-900">×</button>
+              <h2 className="inline-flex items-center gap-2 font-serif text-xl text-[#344a57]">
+                <Eye className="w-5 h-5" /> Email preview
+              </h2>
+              <button onClick={() => setShowPreview(false)} className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
             </div>
             <iframe srcDoc={previewHtml} className="flex-1 w-full" sandbox="" />
           </div>
@@ -218,31 +425,62 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
 }
 
 // ===================== Block list (canvas) =====================
-function BlockList({ blocks, selected, onSelect, onMove, onRemove, design }: {
+function BlockList({ blocks, selected, onSelect, onMove, onRemove, onDuplicate, onReorder, design }: {
   blocks: Block[]; selected: string | null;
   onSelect: (id: string) => void; onMove: (id: string, d: -1|1) => void; onRemove: (id: string) => void;
+  onDuplicate: (id: string) => void; onReorder: (draggedId: string, targetId: string) => void;
   design: Design;
 }) {
   return (
     <>
-      {blocks.map((b, i) => (
-        <div key={b.id} onClick={e => { e.stopPropagation(); onSelect(b.id); }}
-          className={`relative group my-1 ${selected === b.id ? 'outline outline-2 outline-[#344a57]' : 'outline outline-1 outline-transparent hover:outline-neutral-300'}`}>
-          {selected === b.id && (
-            <div className="absolute -top-7 right-0 flex gap-1 bg-[#344a57] text-white text-xs rounded px-1 py-0.5 z-10">
-              <button title="Up" onClick={e => { e.stopPropagation(); onMove(b.id, -1); }} disabled={i === 0} className="px-1 disabled:opacity-30">↑</button>
-              <button title="Down" onClick={e => { e.stopPropagation(); onMove(b.id, 1); }} disabled={i === blocks.length - 1} className="px-1 disabled:opacity-30">↓</button>
-              <button title="Delete" onClick={e => { e.stopPropagation(); onRemove(b.id); }} className="px-1 text-red-200 hover:text-red-100">×</button>
+      {blocks.map((b, i) => {
+        const meta = BLOCK_META[b.type];
+        const Icon = meta.icon;
+        const isSelected = selected === b.id;
+        return (
+          <div key={b.id}
+            draggable
+            onDragStart={e => { e.stopPropagation(); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', b.id); }}
+            onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+            onDrop={e => {
+              e.preventDefault(); e.stopPropagation();
+              const draggedId = e.dataTransfer.getData('text/plain');
+              if (draggedId) onReorder(draggedId, b.id);
+            }}
+            onClick={e => { e.stopPropagation(); onSelect(b.id); }}
+            className={`relative group my-1 rounded-md transition-shadow ${isSelected ? 'outline outline-2 outline-offset-4 outline-[#344a57]' : 'outline outline-1 outline-offset-4 outline-transparent hover:outline-neutral-300'}`}
+          >
+            {isSelected && (
+              <div className="absolute -top-7 left-0 flex items-center gap-1 z-10">
+                <span className="inline-flex items-center gap-1 bg-[#344a57] text-white text-[10px] font-semibold uppercase tracking-wide rounded px-2 py-1">
+                  <Icon className="w-3 h-3" /> {meta.label}
+                </span>
+              </div>
+            )}
+            <div className={`absolute -top-7 right-0 flex items-center gap-0.5 bg-[#344a57] text-white rounded px-1 py-1 z-10 shadow-sm transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+              <span title="Drag to reorder" className="p-1 rounded cursor-grab active:cursor-grabbing"><GripVertical className="w-3.5 h-3.5" /></span>
+              <button title="Move up" onClick={e => { e.stopPropagation(); onMove(b.id, -1); }} disabled={i === 0} className="p-1 rounded hover:bg-white/20 disabled:opacity-30">
+                <ChevronUp className="w-3.5 h-3.5" />
+              </button>
+              <button title="Move down" onClick={e => { e.stopPropagation(); onMove(b.id, 1); }} disabled={i === blocks.length - 1} className="p-1 rounded hover:bg-white/20 disabled:opacity-30">
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              <button title="Duplicate" onClick={e => { e.stopPropagation(); onDuplicate(b.id); }} className="p-1 rounded hover:bg-white/20">
+                <Copy className="w-3.5 h-3.5" />
+              </button>
+              <button title="Delete" onClick={e => { e.stopPropagation(); onRemove(b.id); }} className="p-1 rounded hover:bg-red-500">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
             </div>
-          )}
-          <BlockPreview b={b} design={design} selected={selected} onSelect={onSelect} onMove={onMove} onRemove={onRemove} />
-        </div>
-      ))}
+            <BlockPreview b={b} design={design} selected={selected} onSelect={onSelect} onMove={onMove} onRemove={onRemove} onDuplicate={onDuplicate} onReorder={onReorder} />
+          </div>
+        );
+      })}
     </>
   );
 }
 
-function BlockPreview({ b, design, selected, onSelect, onMove, onRemove }: any) {
+function BlockPreview({ b, design, selected, onSelect, onMove, onRemove, onDuplicate, onReorder }: any) {
   switch (b.type) {
     case 'heading': {
       const Tag = (`h${b.level}`) as keyof React.JSX.IntrinsicElements;
@@ -267,15 +505,15 @@ function BlockPreview({ b, design, selected, onSelect, onMove, onRemove }: any) 
       return (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: b.gap }} onClick={e => e.stopPropagation()}>
           {(['left', 'right'] as const).map(side => (
-            <div key={side} className="min-h-[40px] border border-dashed border-neutral-300 p-2">
-              {(b[side] as Block[]).length === 0 && <p className="text-xs text-neutral-400 text-center">{side} column</p>}
-              <BlockList blocks={b[side]} selected={selected} onSelect={onSelect} onMove={onMove} onRemove={onRemove} design={design} />
+            <div key={side} className="min-h-[40px] rounded-md border border-dashed border-neutral-300 p-2">
+              {(b[side] as Block[]).length === 0 && <p className="text-xs text-neutral-400 text-center capitalize">{side} column</p>}
+              <BlockList blocks={b[side]} selected={selected} onSelect={onSelect} onMove={onMove} onRemove={onRemove} onDuplicate={onDuplicate} onReorder={onReorder} design={design} />
             </div>
           ))}
         </div>
       );
     case 'html':
-      return <div className="bg-neutral-50 border border-dashed border-neutral-300 p-2 text-xs font-mono text-neutral-600 max-h-32 overflow-auto">{b.code}</div>;
+      return <div className="bg-neutral-50 border border-dashed border-neutral-300 rounded-md p-2 text-xs font-mono text-neutral-600 max-h-32 overflow-auto">{b.code}</div>;
   }
 }
 
@@ -284,7 +522,7 @@ function PropsPanel({ block, onChange }: { block: Block; onChange: (patch: Parti
   switch (block.type) {
     case 'heading':
       return (
-        <div className="space-y-3 text-sm">
+        <div className="space-y-4 text-sm">
           <FieldText label="Text"  value={block.text} onChange={v => onChange({ text: v } as any)} multiline />
           <FieldSelect label="Level" value={String(block.level)} options={[['1','H1'],['2','H2'],['3','H3']]} onChange={v => onChange({ level: Number(v) as any } as any)} />
           <FieldAlign value={block.align} onChange={v => onChange({ align: v } as any)} />
@@ -294,7 +532,7 @@ function PropsPanel({ block, onChange }: { block: Block; onChange: (patch: Parti
       );
     case 'paragraph':
       return (
-        <div className="space-y-3 text-sm">
+        <div className="space-y-4 text-sm">
           <FieldText label="Text" value={block.text} onChange={v => onChange({ text: v } as any)} multiline />
           <FieldAlign value={block.align} onChange={v => onChange({ align: v } as any)} />
           <FieldColor label="Color" value={block.color} onChange={v => onChange({ color: v } as any)} />
@@ -304,7 +542,7 @@ function PropsPanel({ block, onChange }: { block: Block; onChange: (patch: Parti
       );
     case 'image':
       return (
-        <div className="space-y-3 text-sm">
+        <div className="space-y-4 text-sm">
           <FieldText label="Image URL"  value={block.src} onChange={v => onChange({ src: v } as any)} />
           <FieldText label="Alt text"   value={block.alt} onChange={v => onChange({ alt: v } as any)} />
           <FieldNumber label="Width (px)" value={block.width} onChange={v => onChange({ width: v } as any)} />
@@ -314,7 +552,7 @@ function PropsPanel({ block, onChange }: { block: Block; onChange: (patch: Parti
       );
     case 'button':
       return (
-        <div className="space-y-3 text-sm">
+        <div className="space-y-4 text-sm">
           <FieldText label="Text" value={block.text} onChange={v => onChange({ text: v } as any)} />
           <FieldText label="Link URL" value={block.href} onChange={v => onChange({ href: v } as any)} />
           <FieldColor label="Background" value={block.bgColor} onChange={v => onChange({ bgColor: v } as any)} />
@@ -327,7 +565,7 @@ function PropsPanel({ block, onChange }: { block: Block; onChange: (patch: Parti
       );
     case 'divider':
       return (
-        <div className="space-y-3 text-sm">
+        <div className="space-y-4 text-sm">
           <FieldColor label="Color" value={block.color} onChange={v => onChange({ color: v } as any)} />
           <FieldNumber label="Thickness (px)" value={block.thickness} onChange={v => onChange({ thickness: v } as any)} />
         </div>
@@ -346,7 +584,7 @@ function GlobalStyleEditor({ design, onChange }: { design: Design; onChange: (d:
   const g = design.globalStyle;
   const set = (patch: Partial<Design['globalStyle']>) => onChange({ ...design, globalStyle: { ...g, ...patch } });
   return (
-    <div className="space-y-2 text-sm">
+    <div className="space-y-3 text-sm">
       <FieldColor  label="Background"      value={g.bgColor}        onChange={v => set({ bgColor: v })} />
       <FieldColor  label="Content bg"      value={g.contentBgColor} onChange={v => set({ contentBgColor: v })} />
       <FieldColor  label="Accent / brand"  value={g.accentColor}    onChange={v => set({ accentColor: v })} />
@@ -362,28 +600,30 @@ function GlobalStyleEditor({ design, onChange }: { design: Design; onChange: (d:
 function FieldText({ label, value, onChange, multiline, mono }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean; mono?: boolean }) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-wider text-neutral-600">{label}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{label}</span>
       {multiline
-        ? <textarea value={value} onChange={e => onChange(e.target.value)} className={`w-full mt-1 px-2 py-1 border border-neutral-300 rounded text-sm min-h-[80px] ${mono ? 'font-mono text-xs' : ''}`} />
-        : <input value={value} onChange={e => onChange(e.target.value)} className="w-full mt-1 px-2 py-1 border border-neutral-300 rounded text-sm" />}
+        ? <textarea value={value} onChange={e => onChange(e.target.value)} className={`w-full mt-1.5 px-2.5 py-2 border border-neutral-300 rounded-lg text-sm min-h-[80px] focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors ${mono ? 'font-mono text-xs' : ''}`} />
+        : <input value={value} onChange={e => onChange(e.target.value)} className="w-full mt-1.5 px-2.5 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />}
     </label>
   );
 }
 function FieldNumber({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-wider text-neutral-600">{label}</span>
-      <input type="number" value={value} onChange={e => onChange(parseInt(e.target.value) || 0)} className="w-full mt-1 px-2 py-1 border border-neutral-300 rounded text-sm" />
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{label}</span>
+      <input type="number" value={value} onChange={e => onChange(parseInt(e.target.value) || 0)} className="w-full mt-1.5 px-2.5 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
     </label>
   );
 }
 function FieldColor({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-wider text-neutral-600">{label}</span>
-      <div className="flex items-center gap-2 mt-1">
-        <input type="color" value={value} onChange={e => onChange(e.target.value)} className="w-8 h-8 rounded border border-neutral-300" />
-        <input type="text" value={value} onChange={e => onChange(e.target.value)} className="flex-1 px-2 py-1 border border-neutral-300 rounded text-xs font-mono" />
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{label}</span>
+      <div className="flex items-center gap-2 mt-1.5">
+        <span className="relative w-8 h-8 rounded-lg border border-neutral-300 overflow-hidden shrink-0" style={{ backgroundColor: value }}>
+          <input type="color" value={value} onChange={e => onChange(e.target.value)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        </span>
+        <input type="text" value={value} onChange={e => onChange(e.target.value)} className="flex-1 px-2.5 py-1.5 border border-neutral-300 rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
       </div>
     </label>
   );
@@ -391,8 +631,8 @@ function FieldColor({ label, value, onChange }: { label: string; value: string; 
 function FieldSelect({ label, value, options, onChange }: { label: string; value: string; options: [string, string][]; onChange: (v: string) => void }) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-wider text-neutral-600">{label}</span>
-      <select value={value} onChange={e => onChange(e.target.value)} className="w-full mt-1 px-2 py-1 border border-neutral-300 rounded text-sm">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{label}</span>
+      <select value={value} onChange={e => onChange(e.target.value)} className="w-full mt-1.5 px-2.5 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors">
         {options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
       </select>
     </label>
@@ -401,14 +641,71 @@ function FieldSelect({ label, value, options, onChange }: { label: string; value
 function FieldAlign({ value, onChange }: { value: BlockAlign; onChange: (v: BlockAlign) => void }) {
   return (
     <div>
-      <span className="text-xs uppercase tracking-wider text-neutral-600">Align</span>
-      <div className="flex gap-1 mt-1">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Align</span>
+      <div className="flex gap-1 mt-1.5">
         {(['left','center','right'] as const).map(a => (
           <button key={a} onClick={() => onChange(a)}
-            className={`flex-1 px-2 py-1 text-xs rounded border ${value === a ? 'bg-[#344a57] text-white border-[#344a57]' : 'border-neutral-300'}`}>
+            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded-lg border capitalize transition-colors ${value === a ? 'bg-[#344a57] text-white border-[#344a57]' : 'border-neutral-300 hover:bg-neutral-50'}`}>
             {a}
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ===================== Save As / Send test modals =====================
+function SaveAsModal({ initialName, saving, onClose, onSave }: {
+  initialName: string; saving: boolean; onClose: () => void; onSave: (name: string) => void;
+}) {
+  const [value, setValue] = useState(initialName);
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+          <h2 className="inline-flex items-center gap-2 font-serif text-lg text-[#344a57]"><Copy className="w-4 h-4" /> Save as new template</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <label className="block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">New template name</span>
+            <input autoFocus value={value} onChange={e => setValue(e.target.value)}
+              className="w-full mt-1.5 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
+          </label>
+          <button onClick={() => onSave(value.trim() || initialName)} disabled={saving}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-[#344a57] text-white rounded-lg hover:bg-[#2a3c47] disabled:opacity-50 transition-colors">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} {saving ? 'Saving…' : 'Save as new'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SendTestModal({ sending, message, onClose, onSend }: {
+  sending: boolean; message: string | null; onClose: () => void; onSend: (email: string) => void;
+}) {
+  const [email, setEmail] = useState('');
+  const sent = message?.startsWith('Sent');
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+          <h2 className="inline-flex items-center gap-2 font-serif text-lg text-[#344a57]"><Send className="w-4 h-4" /> Send test email</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <label className="block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Send to</span>
+            <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"
+              className="w-full mt-1.5 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
+          </label>
+          {message && <p className={`text-xs ${sent ? 'text-emerald-600' : 'text-red-600'}`}>{message}</p>}
+          <button onClick={() => onSend(email)} disabled={sending || !email}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-[#344a57] text-white rounded-lg hover:bg-[#2a3c47] disabled:opacity-50 transition-colors">
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} {sending ? 'Sending…' : 'Send test'}
+          </button>
+        </div>
       </div>
     </div>
   );
