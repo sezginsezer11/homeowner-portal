@@ -6,9 +6,10 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, Eye, Save, Check, X, Plus, Palette,
+  ArrowLeft, Eye, Save, Check, X, Palette, LayoutGrid,
   Heading, Pilcrow, Image as ImageIcon, MousePointerClick, Minus, MoveVertical, Columns, Code2,
   GripVertical, ChevronUp, ChevronDown, Copy, Trash2, LayoutPanelLeft,
+  Monitor, Smartphone, Send, Loader2, Eraser,
 } from 'lucide-react';
 import { DEFAULT_DESIGN, newBlock } from '@/lib/email/blocks';
 import type { Block, Design, BlockAlign } from '@/lib/email/blocks';
@@ -39,6 +40,13 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
   const [msg, setMsg] = useState<string | null>(null);
   const [previewHtml, setPreviewHtml] = useState<string>('');
   const [showPreview, setShowPreview] = useState(false);
+  const [device, setDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [sidebarTab, setSidebarTab] = useState<'blocks' | 'style'>('blocks');
+  const [showSaveAs, setShowSaveAs] = useState(false);
+  const [savingAs, setSavingAs] = useState(false);
+  const [showSendTest, setShowSendTest] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testMsg, setTestMsg] = useState<string | null>(null);
 
   // Load existing template
   useEffect(() => {
@@ -60,33 +68,79 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
     return () => clearTimeout(t);
   }, [msg]);
 
-  // Refresh server-rendered preview when "Preview" opens
-  const refreshPreview = async () => {
-    const r = await fetch('/api/email/templates' + (templateId ? `/${templateId}` : ''), {
-      method: templateId ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, subject, preheader, design }),
-    });
-    const j = await r.json();
-    if (j.template) {
-      setPreviewHtml(j.template.html_body || '');
-      if (!templateId && j.template.id) router.replace(`/dashboard/email/templates/${j.template.id}`);
-    }
-  };
-
-  const save = async () => {
-    setSaving(true); setMsg(null);
-    const url = templateId ? `/api/email/templates/${templateId}` : '/api/email/templates';
+  // Persists the current draft (creating the template on first save) and
+  // returns the saved row. Shared by Preview, Save, and Send test email.
+  const persist = async () => {
+    const url = '/api/email/templates' + (templateId ? `/${templateId}` : '');
     const method = templateId ? 'PATCH' : 'POST';
     const r = await fetch(url, {
       method, headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, subject, preheader, design }),
     });
     const j = await r.json();
-    setSaving(false);
-    if (!r.ok) { setMsg(j.error || 'Save failed'); return; }
-    setMsg('Saved');
+    if (!r.ok) throw new Error(j.error || 'Save failed');
     if (!templateId && j.template?.id) router.replace(`/dashboard/email/templates/${j.template.id}`);
+    return j.template;
+  };
+
+  // Refresh server-rendered preview when "Preview" opens
+  const refreshPreview = async () => {
+    const template = await persist();
+    setPreviewHtml(template.html_body || '');
+  };
+
+  const save = async () => {
+    setSaving(true); setMsg(null);
+    try {
+      await persist();
+      setMsg('Saved');
+    } catch (e: any) {
+      setMsg(e.message || 'Save failed');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveAs = async (newName: string) => {
+    setSavingAs(true);
+    try {
+      const r = await fetch('/api/email/templates', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName, subject, preheader, design }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Save failed');
+      setName(newName);
+      setShowSaveAs(false);
+      router.push(`/dashboard/email/templates/${j.template.id}`);
+    } finally {
+      setSavingAs(false);
+    }
+  };
+
+  const clearTemplate = () => {
+    if (design.blocks.length === 0) return;
+    if (!window.confirm('Remove all blocks from this template? This cannot be undone.')) return;
+    setDesign({ ...design, blocks: [] });
+    setSelected(null);
+  };
+
+  const sendTest = async (to: string) => {
+    setSendingTest(true); setTestMsg(null);
+    try {
+      const template = await persist();
+      const r = await fetch(`/api/email/templates/${template.id}/test`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to }),
+      });
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error || 'Send failed');
+      setTestMsg(`Sent! Check ${to}`);
+    } catch (e: any) {
+      setTestMsg(e.message || 'Send failed');
+    } finally {
+      setSendingTest(false);
+    }
   };
 
   const selectedBlock = useMemo<Block | null>(() => {
@@ -201,15 +255,28 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
           <input value={name} onChange={e => setName(e.target.value)}
             className="px-2 py-1 border border-transparent hover:border-neutral-300 rounded-lg font-serif text-lg text-[#344a57] focus:outline-none focus:border-[#344a57] focus:ring-2 focus:ring-[#344a57]/10 transition-colors" />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {msg && (
             <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
               <Check className="w-3.5 h-3.5" /> {msg}
             </span>
           )}
+          <button title="Remove all blocks" onClick={clearTemplate}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-neutral-500 rounded-lg hover:bg-neutral-100 hover:text-red-600 transition-colors">
+            <Eraser className="w-4 h-4" /> Clear
+          </button>
+          <div className="w-px h-5 bg-neutral-200" />
+          <button onClick={() => { setShowSendTest(true); setTestMsg(null); }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
+            <Send className="w-4 h-4" /> Send test
+          </button>
           <button onClick={() => { refreshPreview(); setShowPreview(true); }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
             <Eye className="w-4 h-4" /> Preview
+          </button>
+          <button onClick={() => setShowSaveAs(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors">
+            <Copy className="w-4 h-4" /> Save as
           </button>
           <button onClick={save} disabled={saving}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium bg-[#344a57] text-white rounded-lg hover:bg-[#2a3c47] disabled:opacity-50 transition-colors shadow-sm">
@@ -229,42 +296,67 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
       {/* Main 3-column layout */}
       <div className="grid grid-cols-12 gap-4 p-4">
         {/* Block library */}
-        <aside className="col-span-12 md:col-span-2">
+        <aside className="col-span-12 md:col-span-3">
           <div className="bg-white border border-neutral-200 rounded-xl shadow-card p-3 sticky top-20">
-            <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-500 mb-2 px-1">
-              <Plus className="w-3.5 h-3.5" /> Add block
-            </h3>
-            <div className="space-y-0.5">
-              {PALETTE.map(type => {
-                const meta = BLOCK_META[type];
-                const Icon = meta.icon;
-                return (
-                  <button key={type} onClick={() => addBlock(type)}
-                    className="w-full flex items-center gap-2.5 px-2 py-2 text-sm rounded-lg hover:bg-neutral-50 transition-colors group text-left">
-                    <span className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 transition-colors ${meta.bg}`}>
-                      <Icon className={`w-3.5 h-3.5 ${meta.fg}`} strokeWidth={2} />
-                    </span>
-                    <span className="font-medium text-neutral-700">{meta.label}</span>
-                  </button>
-                );
-              })}
+            <div className="flex gap-1 p-1 bg-neutral-100 rounded-lg mb-3">
+              <button onClick={() => setSidebarTab('blocks')}
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${sidebarTab === 'blocks' ? 'bg-white shadow-sm text-[#344a57]' : 'text-neutral-500 hover:text-neutral-700'}`}>
+                <LayoutGrid className="w-3.5 h-3.5" /> Content
+              </button>
+              <button onClick={() => setSidebarTab('style')}
+                className={`flex-1 inline-flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-colors ${sidebarTab === 'style' ? 'bg-white shadow-sm text-[#344a57]' : 'text-neutral-500 hover:text-neutral-700'}`}>
+                <Palette className="w-3.5 h-3.5" /> Style
+              </button>
             </div>
-            <h3 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-500 mt-5 mb-2 px-1">
-              <Palette className="w-3.5 h-3.5" /> Page style
-            </h3>
-            <GlobalStyleEditor design={design} onChange={setDesign} />
+
+            {sidebarTab === 'blocks' ? (
+              <div className="grid grid-cols-2 gap-2">
+                {PALETTE.map(type => {
+                  const meta = BLOCK_META[type];
+                  const Icon = meta.icon;
+                  return (
+                    <button key={type} onClick={() => addBlock(type)}
+                      className="flex flex-col items-center justify-center gap-2 px-2 py-4 rounded-xl border border-neutral-200 hover:border-neutral-300 hover:shadow-card bg-white transition-all group text-center">
+                      <span className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${meta.bg}`}>
+                        <Icon className={`w-5 h-5 ${meta.fg}`} strokeWidth={2} />
+                      </span>
+                      <span className="text-xs font-medium text-neutral-600 leading-tight">{meta.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <GlobalStyleEditor design={design} onChange={setDesign} />
+            )}
           </div>
         </aside>
 
         {/* Canvas */}
-        <main className="col-span-12 md:col-span-7">
+        <main className="col-span-12 md:col-span-6">
+          <div className="flex items-center gap-1 mb-3">
+            <button title="Desktop preview" onClick={() => setDevice('desktop')}
+              className={`p-2 rounded-lg border transition-colors ${device === 'desktop' ? 'bg-[#344a57] border-[#344a57] text-white' : 'border-neutral-300 text-neutral-500 hover:bg-neutral-50'}`}>
+              <Monitor className="w-4 h-4" />
+            </button>
+            <button title="Mobile preview" onClick={() => setDevice('mobile')}
+              className={`p-2 rounded-lg border transition-colors ${device === 'mobile' ? 'bg-[#344a57] border-[#344a57] text-white' : 'border-neutral-300 text-neutral-500 hover:bg-neutral-50'}`}>
+              <Smartphone className="w-4 h-4" />
+            </button>
+          </div>
           <div
             className="rounded-xl border border-neutral-200 p-8"
             style={{ backgroundImage: 'radial-gradient(circle, #e2e2e2 1px, transparent 1px)', backgroundSize: '16px 16px', backgroundColor: '#f4f4f5' }}
             onClick={() => setSelected(null)}
           >
-            <div className="rounded-lg shadow-card overflow-hidden mx-auto" style={{ maxWidth: design.globalStyle.contentWidth + 80, backgroundColor: design.globalStyle.bgColor, padding: 40 }}>
-              <div style={{ backgroundColor: design.globalStyle.contentBgColor, maxWidth: design.globalStyle.contentWidth, margin: '0 auto', padding: 40 }}>
+            <div
+              className="rounded-lg shadow-card overflow-hidden mx-auto transition-[max-width] duration-200"
+              style={{
+                maxWidth: device === 'mobile' ? 400 : design.globalStyle.contentWidth + 80,
+                backgroundColor: design.globalStyle.bgColor,
+                padding: device === 'mobile' ? 16 : 40,
+              }}
+            >
+              <div style={{ backgroundColor: design.globalStyle.contentBgColor, maxWidth: design.globalStyle.contentWidth, margin: '0 auto', padding: device === 'mobile' ? 20 : 40 }}>
                 <BlockList blocks={design.blocks} selected={selected} onSelect={setSelected} onMove={moveBlock} onRemove={removeBlock} onDuplicate={duplicateBlock} onReorder={reorderBlock} design={design} />
                 {design.blocks.length === 0 && (
                   <div className="flex flex-col items-center justify-center text-center gap-2 py-16">
@@ -294,6 +386,24 @@ export default function TemplateEditor({ templateId }: { templateId?: string }) 
           </div>
         </aside>
       </div>
+
+      {showSaveAs && (
+        <SaveAsModal
+          initialName={`${name} (Copy)`}
+          saving={savingAs}
+          onClose={() => setShowSaveAs(false)}
+          onSave={saveAs}
+        />
+      )}
+
+      {showSendTest && (
+        <SendTestModal
+          sending={sendingTest}
+          message={testMsg}
+          onClose={() => setShowSendTest(false)}
+          onSend={sendTest}
+        />
+      )}
 
       {showPreview && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setShowPreview(false)}>
@@ -539,6 +649,63 @@ function FieldAlign({ value, onChange }: { value: BlockAlign; onChange: (v: Bloc
             {a}
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+// ===================== Save As / Send test modals =====================
+function SaveAsModal({ initialName, saving, onClose, onSave }: {
+  initialName: string; saving: boolean; onClose: () => void; onSave: (name: string) => void;
+}) {
+  const [value, setValue] = useState(initialName);
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+          <h2 className="inline-flex items-center gap-2 font-serif text-lg text-[#344a57]"><Copy className="w-4 h-4" /> Save as new template</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <label className="block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">New template name</span>
+            <input autoFocus value={value} onChange={e => setValue(e.target.value)}
+              className="w-full mt-1.5 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
+          </label>
+          <button onClick={() => onSave(value.trim() || initialName)} disabled={saving}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-[#344a57] text-white rounded-lg hover:bg-[#2a3c47] disabled:opacity-50 transition-colors">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />} {saving ? 'Saving…' : 'Save as new'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SendTestModal({ sending, message, onClose, onSend }: {
+  sending: boolean; message: string | null; onClose: () => void; onSend: (email: string) => void;
+}) {
+  const [email, setEmail] = useState('');
+  const sent = message?.startsWith('Sent');
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="px-5 py-4 border-b border-neutral-200 flex items-center justify-between">
+          <h2 className="inline-flex items-center gap-2 font-serif text-lg text-[#344a57]"><Send className="w-4 h-4" /> Send test email</h2>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 transition-colors"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <label className="block">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Send to</span>
+            <input type="email" autoFocus value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"
+              className="w-full mt-1.5 px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#344a57]/10 focus:border-[#344a57] transition-colors" />
+          </label>
+          {message && <p className={`text-xs ${sent ? 'text-emerald-600' : 'text-red-600'}`}>{message}</p>}
+          <button onClick={() => onSend(email)} disabled={sending || !email}
+            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium bg-[#344a57] text-white rounded-lg hover:bg-[#2a3c47] disabled:opacity-50 transition-colors">
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} {sending ? 'Sending…' : 'Send test'}
+          </button>
+        </div>
       </div>
     </div>
   );
