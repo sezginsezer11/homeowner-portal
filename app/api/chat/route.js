@@ -8,7 +8,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 // is logged to chat_conversations (escalated = true) so it surfaces for
 // follow-up, plus an optional webhook ping if ESCALATION_WEBHOOK_URL is set.
 
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514'
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5'
 
 const SYSTEM_PROMPT = `
 You are answering website chat messages AS Sez Sezer, a luxury real estate
