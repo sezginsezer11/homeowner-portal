@@ -97,16 +97,25 @@
   }
 
   var greeted = false;
-  bubble.addEventListener("click", function () {
-    panel.classList.toggle("open");
-    if (panel.classList.contains("open") && !greeted) {
+  function openPanel() {
+    panel.classList.add("open");
+    if (!greeted) {
       greeted = true;
       addMessage(
         "bot",
         "Hi, I'm Sez's assistant. Ask me anything about Carmel Valley, Del Mar, or Rancho Santa Fe — or tell me what you're looking for and I'll get you connected with Sez."
       );
     }
+  }
+  bubble.addEventListener("click", function () {
+    if (panel.classList.contains("open")) {
+      panel.classList.remove("open");
+    } else {
+      openPanel();
+    }
   });
+  window.addEventListener("sez-chat:open", openPanel);
+  window.SezChat = { open: openPanel };
 
   async function sendMessage() {
     var text = inputEl.value.trim();

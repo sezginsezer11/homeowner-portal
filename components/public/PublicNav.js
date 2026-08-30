@@ -61,6 +61,7 @@ export default function PublicNav() {
 
   const MENU_ITEMS = [
     { icon: LayoutDashboard, label: 'My Dashboard',         href: dashboardUrl,                          highlight: true },
+    { icon: MessageSquare,   label: 'Ask Sez AI',           onClick: () => { setUserMenuOpen(false); window.dispatchEvent(new Event('sez-chat:open')) } },
     { icon: Heart,           label: 'Favorites',            href: '/placeholder' },
     { icon: Search,          label: 'Saved Searches',       href: '/placeholder' },
     { icon: Calendar,        label: 'Open House Schedule',  href: '/placeholder' },
@@ -147,15 +148,27 @@ export default function PublicNav() {
                       <div className="py-3">
                         <div className="px-4 pb-2 text-[10px] font-black uppercase tracking-wider text-[#9ca3af]">My 360</div>
                         {MENU_ITEMS.map(item => (
-                          <Link key={item.label} href={item.href} onClick={() => setUserMenuOpen(false)}
-                            className={`flex items-center gap-2.5 px-4 py-2 text-sm transition-all ${
-                              item.highlight
-                                ? 'text-[#1877F2] font-bold hover:bg-[#e7f0fd]'
-                                : 'text-[#444] hover:text-[#1877F2] hover:bg-[#f0f7ff]'
-                            }`}>
-                            <item.icon className={`w-3.5 h-3.5 flex-shrink-0 ${item.highlight ? 'text-[#1877F2]' : 'text-[#9ca3af]'}`} />
-                            {item.label}
-                          </Link>
+                          item.onClick ? (
+                            <button key={item.label} onClick={item.onClick}
+                              className={`w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm transition-all ${
+                                item.highlight
+                                  ? 'text-[#1877F2] font-bold hover:bg-[#e7f0fd]'
+                                  : 'text-[#444] hover:text-[#1877F2] hover:bg-[#f0f7ff]'
+                              }`}>
+                              <item.icon className={`w-3.5 h-3.5 flex-shrink-0 ${item.highlight ? 'text-[#1877F2]' : 'text-[#9ca3af]'}`} />
+                              {item.label}
+                            </button>
+                          ) : (
+                            <Link key={item.label} href={item.href} onClick={() => setUserMenuOpen(false)}
+                              className={`flex items-center gap-2.5 px-4 py-2 text-sm transition-all ${
+                                item.highlight
+                                  ? 'text-[#1877F2] font-bold hover:bg-[#e7f0fd]'
+                                  : 'text-[#444] hover:text-[#1877F2] hover:bg-[#f0f7ff]'
+                              }`}>
+                              <item.icon className={`w-3.5 h-3.5 flex-shrink-0 ${item.highlight ? 'text-[#1877F2]' : 'text-[#9ca3af]'}`} />
+                              {item.label}
+                            </Link>
+                          )
                         ))}
                       </div>
 
